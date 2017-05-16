@@ -21,6 +21,10 @@ type op =
   | OMinus
   | OTimes
   | ODivide
+  | OPlusEq
+  | OMinusEq
+  | OTimesEq
+  | ODivideEq
   | OLT
   | OLTE
   | OGT
@@ -111,6 +115,8 @@ let rec tokenize stm =
   let issym s = List.mem_assoc s symbols in
   let operators = ["+", OPlus; "-", OMinus;
                    "*", OTimes; "/", ODivide;
+                   "+=", OPlusEq; "-=", OMinusEq;
+                   "*=", OTimesEq; "/=", ODivideEq;
                    "<", OLT; ">", OGT;
                    "<=", OLTE; ">=", OGTE;
                    "=", OAssign; "==", OEQ] in
@@ -123,7 +129,8 @@ let rec tokenize stm =
   | Some c ->
       let tok =
         if issym (ctos c) then List.assoc (ctos c) symbols
-        else if List.mem c ['<'; '>'; '='] && (peek stm) = Some '=' then
+        else if List.mem c ['+'; '-'; '*'; '/'; '<'; '>'; '=']
+                && (peek stm) = Some '=' then
           ( chomp1 stm; Op (List.assoc (cjoin c '=') operators) )
         else if isop (ctos c) then Op (List.assoc (ctos c) operators)
         else if isdigit c then ( push stm c; Num (read_num stm 0) )
