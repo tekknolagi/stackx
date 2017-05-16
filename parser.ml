@@ -21,10 +21,17 @@ type op =
   | OMinus
   | OTimes
   | ODivide
+  | OLT
+  | OLTE
+  | OGT
+  | OGTE
+  | OEQ
+  | OAssign
 
 type ty =
   | TInt
   | TChar
+  | TBool
 
 type token =
   | Keyword of keyword
@@ -39,7 +46,6 @@ type token =
   | Colon
   | Comma
   | Semicolon
-  | Eq
 
 module LocationStream = struct
   type t = { stm : char Stream.t;
@@ -63,6 +69,11 @@ module LocationStream = struct
   let push stm c =
     !stm.buf <- c :: !stm.buf
 
+  let peek stm =
+    match next stm with
+    | None -> None
+    | Some c -> push stm c; Some c
+
   let eeof _ =
     raise @@ SyntaxError "eof when reading name"
 
@@ -71,6 +82,7 @@ module LocationStream = struct
 end
 
 let ctos = String.make 1
+let cjoin c1 c2 = (String.make 1 c1) ^ (String.make 1 c2)
 
 let rec tokenize stm =
   let open LocationStream in
@@ -92,9 +104,13 @@ let rec tokenize stm =
   let symbols = ["(", Lparen; ")", Rparen;
                  "{", Lcurly; "}", Rcurly;
                  ":", Colon; ",", Comma;
-                 ";", Semicolon; "=", Eq] in
+                 ";", Semicolon] in
   let issym s = List.mem_assoc s symbols in
-  let operators = ["+", OPlus; "-", OMinus; "*", OTimes; "/", ODivide] in
+  let operators = ["+", OPlus; "-", OMinus;
+                   "*", OTimes; "/", ODivide;
+                   "<", OLT; ">", OGT;
+                   "<=", OLTE; ">=", OGTE;
+                   "=", OAssign; "==", OEQ] in
   let types = ["int", TInt; "char", TChar] in
   let istype s = List.mem_assoc s types in
   let isop s = List.mem_assoc s operators in
@@ -104,6 +120,8 @@ let rec tokenize stm =
   | Some c ->
       let tok =
         if issym (ctos c) then List.assoc (ctos c) symbols
+        else if List.mem c ['<'; '>'; '=']  && (peek stm) = Some '=' then
+          let _ = next stm in Op (List.assoc (cjoin c '=') operators)
         else if isop (ctos c) then Op (List.assoc (ctos c) operators)
         else if isdigit c then ( push stm c; Num (read_num stm 0) )
         else if ischar c then
@@ -118,11 +136,13 @@ let _ =
   let s = "
   func add (a : int, b : int) {
     let sum : int = a + b;
+    let islte : bool = a <= b;
     return sum;
   }
 
   func main () : int {
     const a : int = 5;
+    let c : bool = 2 == 2;
     return add(3, a);
   }
   " in
