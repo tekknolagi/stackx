@@ -96,7 +96,8 @@ let _ =
   }
 
   func main () : int {
-    return add(3, 2);
+    const a : int = 5;
+    return add(3, a);
   }
   " in
   let stm = LocationStream.of_string s in
