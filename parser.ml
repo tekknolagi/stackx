@@ -19,6 +19,8 @@ type keyword =
 type op =
   | OPlus
   | OMinus
+  | OTimes
+  | ODivide
 
 type ty =
   | TInt
@@ -89,9 +91,10 @@ let rec tokenize stm =
   let iskw w = List.mem_assoc w keywords in
   let symbols = ["(", Lparen; ")", Rparen;
                  "{", Lcurly; "}", Rcurly;
-                 ":", Colon; ",", Comma; ";", Semicolon; "=", Eq] in
+                 ":", Colon; ",", Comma;
+                 ";", Semicolon; "=", Eq] in
   let issym s = List.mem_assoc s symbols in
-  let operators = ["+", OPlus; "-", OMinus] in
+  let operators = ["+", OPlus; "-", OMinus; "*", OTimes; "/", ODivide] in
   let types = ["int", TInt; "char", TChar] in
   let istype s = List.mem_assoc s types in
   let isop s = List.mem_assoc s operators in
