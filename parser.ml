@@ -66,6 +66,9 @@ module LocationStream = struct
       Some c
     with | Stream.Failure -> None
 
+  let chomp1 stm =
+    let _ = next stm in ()
+
   let push stm c =
     !stm.buf <- c :: !stm.buf
 
@@ -120,8 +123,8 @@ let rec tokenize stm =
   | Some c ->
       let tok =
         if issym (ctos c) then List.assoc (ctos c) symbols
-        else if List.mem c ['<'; '>'; '=']  && (peek stm) = Some '=' then
-          let _ = next stm in Op (List.assoc (cjoin c '=') operators)
+        else if List.mem c ['<'; '>'; '='] && (peek stm) = Some '=' then
+          ( chomp1 stm; Op (List.assoc (cjoin c '=') operators) )
         else if isop (ctos c) then Op (List.assoc (ctos c) operators)
         else if isdigit c then ( push stm c; Num (read_num stm 0) )
         else if ischar c then
