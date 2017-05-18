@@ -66,7 +66,9 @@ module AST = struct
     | IfElse of exp * statement list * statement list
     | Return of exp
     | Exp of exp
-  type function_def = Fun of name * var list * Type.t * statement list
-  type program = Prog of function_def list
+  type toplevel_def =
+    | Fun of name * var list * Type.t * statement list
+    | Const of var * exp
+  type program = Prog of toplevel_def list
   type t = program
 end

@@ -86,6 +86,8 @@ fundef:
 ;
 program_item:
   fundef          { $1 }
+  | KConst vardecl EQUALS expr SEMICOLON
+      { Ast.AST.Const ($2, $4) }
 ;
 program:
   /* empty */       { [] }
