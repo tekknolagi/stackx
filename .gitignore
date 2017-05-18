@@ -21,6 +21,10 @@
 _build
 /tmp/
 
+/parser.mli
+/parser.ml
+/lexer.ml
+
 ocamlbuild.install
 Makefile.config
 
