@@ -46,7 +46,8 @@ module AST = struct
 
   type statement =
     | Assignment of lettype * var * exp
-    | If of exp * statement list * statement list
+    | If of exp * statement list
+    | IfElse of exp * statement list * statement list
     | Return of exp
     | Exp of exp
   type function_def = Fun of name * var list * Type.t * statement list

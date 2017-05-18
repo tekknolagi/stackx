@@ -1,6 +1,6 @@
 all:
 	ocamllex lexer.mll
-	ocamlyacc parser.mly
+	menhir parser.mly
 	ocamlc -c ast.ml
 	ocamlc -c parser.mli
 	ocamlc -c lexer.ml

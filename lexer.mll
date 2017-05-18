@@ -12,6 +12,7 @@ rule token = parse
   | "const"        { KConst }
   | "let"          { KLet }
   | "if"           { KIf }
+  | "else"         { KElse }
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }
@@ -23,7 +24,11 @@ rule token = parse
   | '/'            { DIV }
   | '('            { LPAREN }
   | ')'            { RPAREN }
+  | '{'            { LCURLY }
+  | '}'            { RCURLY }
+  | ','            { COMMA }
   | ':'            { COLON }
   | ';'            { SEMICOLON }
   | '='            { EQUALS }
-  | eof            { raise Eof }
+  | eof            { EOF }
+  | _              { raise (Failure "unknown token") }
