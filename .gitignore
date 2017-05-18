@@ -20,6 +20,8 @@
 *.native
 _build
 /tmp/
+*.swp
+*.swo
 
 /parser.mli
 /parser.ml
