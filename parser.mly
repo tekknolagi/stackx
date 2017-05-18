@@ -42,7 +42,8 @@ vardecl:
     VAR COLON type_ { $1, $3 }
 ;
 stmt:
-  expr SEMICOLON            { Ast.AST.Exp($1) }
+  expr SEMICOLON
+      { Ast.AST.Exp $1 }
   | KLet vardecl EQUALS expr SEMICOLON
       { Ast.AST.(Assignment (LLet, $2, $4)) }
   | KConst vardecl EQUALS expr SEMICOLON
