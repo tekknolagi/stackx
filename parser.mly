@@ -17,10 +17,10 @@
 %left TIMES DIV         /* medium precedence */
 %nonassoc UMINUS        /* highest precedence */
 %start main             /* the entry point */
-%type <Ast.AST.statement> main
+%type <Ast.AST.t> main
 %%
 main:
-    stmt EOF { $1 }
+  program EOF { Ast.AST.Prog $1 }
 ;
 expr:
     INT                     { Ast.AST.IntLit $1 }
@@ -49,13 +49,17 @@ type_:
 vardecl:
     VAR COLON type_ { $1, $3 }
 ;
+const:
+  | KConst vardecl EQUALS expr SEMICOLON
+      { Ast.AST.(Assignment (LConst, $2, $4)) }
+;
 stmt:
   expr SEMICOLON
       { Ast.AST.Exp $1 }
   | KLet vardecl EQUALS expr SEMICOLON
       { Ast.AST.(Assignment (LLet, $2, $4)) }
-  | KConst vardecl EQUALS expr SEMICOLON
-      { Ast.AST.(Assignment (LConst, $2, $4)) }
+  | const
+      { $1 }
   | KIf LPAREN expr RPAREN block KElse block
       { Ast.AST.IfElse ($3, $5, $7) }
   | KIf LPAREN expr RPAREN block
@@ -69,4 +73,21 @@ stmts:
 ;
 block:
   LCURLY stmts RCURLY { $2 }
+;
+formals:
+  /* empty */       { [] }
+  | vardecl         { [$1] }
+  | vardecl COMMA formals { $1 :: $3 }
+;
+fundef:
+  KFunc VAR LPAREN formals RPAREN COLON type_ block
+      { Ast.AST.Fun ($2, $4, $7, $8) }
+;
+program_item:
+  fundef          { $1 }
+;
+program:
+  /* empty */       { [] }
+  | program_item    { [$1] }
+  | program_item program { $1 :: $2 }
 ;
