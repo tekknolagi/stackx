@@ -164,14 +164,7 @@ let rec tokenize stm =
                  ";", Semicolon] in
   let issym s = List.mem_assoc s symbols in
   let operators = ["+", OPlus; "-", OMinus;
-                   "*", OTimes; "/", ODivide;
-                   (*
-                   "+=", OPlusEq; "-=", OMinusEq;
-                   "*=", OTimesEq; "/=", ODivideEq;
-                   "<", OLT; ">", OGT;
-                   "<=", OLTE; ">=", OGTE;
-                   "=", OAssign; "==", OEQ
-  *)] in
+                   "*", OTimes; "/", ODivide] in
   let types = ["int", TInt; "char", TChar; "bool", TBool] in
   let istype s = List.mem_assoc s types in
   let isop s = List.mem_assoc s operators in
@@ -194,54 +187,6 @@ let rec tokenize stm =
         else esyntax stm @@ "unexpected `" ^ ctos c ^ "'"
       in tok :: (tokenize stm)
 
-      (*
-let parse stm =
-  let rec p stm =
-    let open TokenStream in
-    let read_func stm =
-      let rec read_params stm =
-        match next stm with
-        | Some Comma -> read_params stm
-        | Some Rparen -> push stm Rparen; []
-        | Some (Name n) ->
-            let Some Colon = next stm in
-            let Some (Type t) = next stm in
-            (n, t)::(read_params stm)
-        | Some t -> eparse stm @@ "Unexpected token `" ^ string_of_token t ^ "' in param list"
-      in
-      (* let rec read_body stm =
-        match next stm with
-        | Some  *)
-      let Some (Name fnname) = next stm in
-      let Some Lparen = next stm in
-      let params = read_params stm in
-      let Some Rparen = next stm in
-      let Some Rcurly = next stm in
-      (* let body = read_body stm in *)
-      let Some Lcurly = next stm in
-      Some (fnname, params) (* , body) *)
-    in
-    match next stm with
-    | None -> []
-    | Some (Keyword KFunc) ->
-        (
-          match read_func stm with
-          | Some fn -> fn :: (p stm)
-          | None -> eparse stm "Expected function"
-        )
-    | Some t -> eparse stm @@ "Unexpected token: `" ^ string_of_token t ^ "'"
-  in
-  try
-    Some (p stm)
-  with
-  | ParseError e ->
-      prerr_endline @@ "ParseError: " ^ e;
-      None
-  | Match_failure _ ->
-      prerr_endline "ParseError: idk what";
-      None
-      *)
-
 let ast_of_string f s =
   let locstream = LocationStream.of_string s in
   let tokens = tokenize locstream in
@@ -249,7 +194,12 @@ let ast_of_string f s =
   f tokenstream
 
 let read_exp stm =
-  ()
+  let open TokenStream in
+  let open Ast.AST in
+  match next stm with
+  | None -> eparse stm "unexpected end of stream"
+  | Some (Num i) -> IntLit i
+  | Some _ -> eparse stm "illegal"
 
 let () =
   let _ = assert ("2 + 3" = "2 + 3") in

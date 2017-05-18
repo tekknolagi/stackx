@@ -6,14 +6,6 @@ module Type = struct
     | String -> "String"
 end
 
-module AnnotationCons (A : sig type t end) (B : sig type t end) = struct
-  type t = A.t * B.t
-end
-
-module Location = struct
-  type t = int * int
-end
-
 module AST = struct
   type name = string
   type var = name * Type.t
