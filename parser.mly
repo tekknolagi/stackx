@@ -88,6 +88,5 @@ program_item:
 ;
 program:
   /* empty */       { [] }
-  | program_item    { [$1] }
   | program_item program { $1 :: $2 }
 ;
