@@ -10,6 +10,8 @@ let () =
   let _ = assert ((parse "hello();")=(Exp (Funcall ("hello", [])))) in
   let _ = assert ((parse "hello(1);")=(Exp (Funcall ("hello", [IntLit 1])))) in
   let _ = assert ((parse "hello(1, 2, 3);")=(Exp (Funcall ("hello", [IntLit 1; IntLit 2; IntLit 3])))) in
+  let _ = assert ((parse "hello(a(1));")=(Exp (Funcall ("hello", [Funcall ("a", [IntLit 1])])))) in
   let _ = assert ((parse "return 10;")=(Return (IntLit 10))) in
   let _ = assert ((parse "return a(1);")=(Return (Funcall ("a", [IntLit 1])))) in
+  let _ = assert ((parse "1 < 3;")=(Exp (CompOper (Lt, IntLit 1, IntLit 3)))) in
   ()
