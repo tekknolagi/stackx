@@ -45,6 +45,7 @@ actuals:
 type_:
     TInt { Ast.Type.Int }
   | TString { Ast.Type.String }
+  | TBool { Ast.Type.Bool }
 ;
 vardecl:
     VAR COLON type_ { $1, $3 }
