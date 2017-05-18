@@ -30,5 +30,10 @@ rule token = parse
   | ':'            { COLON }
   | ';'            { SEMICOLON }
   | '='            { EQUALS }
+  | '<'            { LT }
+  | '>'            { GT }
+  | "<="           { LTE }
+  | ">="           { GTE }
+  | "=="           { EQ }
   | eof            { EOF }
   | _              { raise (Failure "unknown token") }

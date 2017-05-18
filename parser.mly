@@ -2,6 +2,7 @@
 %token <int> INT
 %token <string> VAR
 %token PLUS MINUS TIMES DIV
+%token LT LTE GT GTE EQ
 %token KFor KFunc KReturn KConst KLet KIf KElse
 %token TInt TString TBool
 %token LPAREN RPAREN
@@ -10,6 +11,8 @@
 %token COMMA
 %token EQUALS
 %token EOL EOF
+%right LT LTE GT GTE
+%right EQ
 %left PLUS MINUS        /* lowest precedence */
 %left TIMES DIV         /* medium precedence */
 %nonassoc UMINUS        /* highest precedence */
@@ -22,10 +25,15 @@ main:
 expr:
     INT                     { Ast.AST.IntLit $1 }
   | LPAREN expr RPAREN      { $2 }
-  | expr PLUS expr          { Ast.AST.(InfixOper (Plus, $1, $3)) }
-  | expr MINUS expr         { Ast.AST.(InfixOper (Minus, $1, $3)) }
-  | expr TIMES expr         { Ast.AST.(InfixOper (Times, $1, $3)) }
-  | expr DIV expr           { Ast.AST.(InfixOper (Div, $1, $3)) }
+  | expr PLUS expr          { Ast.AST.(MathOper (Plus, $1, $3)) }
+  | expr MINUS expr         { Ast.AST.(MathOper (Minus, $1, $3)) }
+  | expr TIMES expr         { Ast.AST.(MathOper (Times, $1, $3)) }
+  | expr DIV expr           { Ast.AST.(MathOper (Div, $1, $3)) }
+  | expr LT expr            { Ast.AST.(CompOper (Lt, $1, $3)) }
+  | expr GT expr            { Ast.AST.(CompOper (Gt, $1, $3)) }
+  | expr LTE expr           { Ast.AST.(CompOper (Lte, $1, $3)) }
+  | expr GTE expr           { Ast.AST.(CompOper (Gte, $1, $3)) }
+  | expr EQ expr            { Ast.AST.(CompOper (Eq, $1, $3)) }
   | VAR LPAREN actuals RPAREN { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
 ;
