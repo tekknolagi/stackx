@@ -5,5 +5,5 @@ all:
 	ocamlc -c parser.mli
 	ocamlc -c lexer.ml
 	ocamlc -c parser.ml
-	ocamlc -c calc.ml
-	ocamlc -o calc ast.cmo lexer.cmo parser.cmo calc.cmo
+	ocamlc -c tests.ml
+	ocamlc -o tests ast.cmo lexer.cmo parser.cmo tests.cmo
