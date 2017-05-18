@@ -24,6 +24,7 @@ main:
 ;
 expr:
     INT                     { Ast.AST.IntLit $1 }
+  | VAR                     { Ast.AST.Var $1 }
   | LPAREN expr RPAREN      { $2 }
   | expr PLUS expr          { Ast.AST.(MathOper (Plus, $1, $3)) }
   | expr MINUS expr         { Ast.AST.(MathOper (Minus, $1, $3)) }
