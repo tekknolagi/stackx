@@ -1,0 +1,11 @@
+Steps to build:
+
+1. `make`
+
+Steps to run:
+
+1. ./tests
+
+(should produce 0 output and 0 exit code)
+
+See tests.ml to see what that binary does.
