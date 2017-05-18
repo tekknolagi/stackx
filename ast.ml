@@ -40,8 +40,12 @@ module AST = struct
         n ^ "("
         ^ (String.concat "," @@ List.map string_of_exp es) ^ ")"
 
+  type lettype =
+    | LLet
+    | LConst
+
   type statement =
-    | Assignment of var * exp
+    | Assignment of lettype * var * exp
     | If of exp * statement list * statement list
     | Return of exp
     | Exp of exp
