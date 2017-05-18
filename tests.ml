@@ -21,6 +21,7 @@ let () =
   a (func_s "return 10;") (stat_v (Return (IntLit 10)));
   a (func_s "return a(1);") (stat_v (Return (Funcall ("a", [IntLit 1]))));
   a (func_s "1 < 3;") (exp_v (CompOper (Lt, IntLit 1, IntLit 3)));
+  a (func_s "a + b;") (exp_v (MathOper (Plus, Var "a", Var "b")));
   a "const a : int = 5; func b () : bool { 1; }"
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])])
   )
