@@ -24,6 +24,7 @@ _build
 /parser.mli
 /parser.ml
 /lexer.ml
+/tests
 
 ocamlbuild.install
 Makefile.config
