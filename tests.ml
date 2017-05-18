@@ -22,3 +22,6 @@ let () =
   a (func_s "return a(1);") (stat_v (Return (Funcall ("a", [IntLit 1]))));
   a (func_s "1 < 3;") (exp_v (CompOper (Lt, IntLit 1, IntLit 3)));
   )
+
+let bigP s =
+  Parser.main Lexer.token @@ Lexing.from_string s
