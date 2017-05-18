@@ -26,10 +26,10 @@ expr:
     INT                     { Ast.AST.IntLit $1 }
   | VAR                     { Ast.AST.Var $1 }
   | LPAREN expr RPAREN      { $2 }
-  | expr PLUS expr          { Ast.AST.(MathOper (Plus, $1, $3)) }
-  | expr MINUS expr         { Ast.AST.(MathOper (Minus, $1, $3)) }
   | expr TIMES expr         { Ast.AST.(MathOper (Times, $1, $3)) }
   | expr DIV expr           { Ast.AST.(MathOper (Div, $1, $3)) }
+  | expr PLUS expr          { Ast.AST.(MathOper (Plus, $1, $3)) }
+  | expr MINUS expr         { Ast.AST.(MathOper (Minus, $1, $3)) }
   | expr LT expr            { Ast.AST.(CompOper (Lt, $1, $3)) }
   | expr GT expr            { Ast.AST.(CompOper (Gt, $1, $3)) }
   | expr LTE expr           { Ast.AST.(CompOper (Lte, $1, $3)) }
