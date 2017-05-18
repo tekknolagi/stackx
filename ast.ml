@@ -14,7 +14,7 @@ module Location = struct
   type t = int * int
 end
 
-module AST (T : sig type t end) = struct
+module AST = struct
   type name = string
   type var = name * Type.t
   type op =
@@ -35,7 +35,5 @@ module AST (T : sig type t end) = struct
     | Exp of exp
   type function_def = Fun of name * var list * Type.t * statement list
   type program = Prog of function_def list
-  type t = T.t * program
+  type t = program
 end
-
-module TypedAst = AST(AnnotationCons(Type)(Location))
