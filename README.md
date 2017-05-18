@@ -1,6 +1,11 @@
+Prerequisites:
+
+- [opam](https://opam.ocaml.org/)
+
 Steps to build:
 
-1. make
+1. opam install menhir
+2. make
 
 Steps to run:
 
