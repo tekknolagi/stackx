@@ -28,19 +28,33 @@ module LIR = struct
 
   type sym = Sym of S.symbol
   type inst =
+    (* Specify a label for a chunk of code. *)
     | Label of S.symbol
+    (* Move the result of one expression into the location specified by the
+       other. The ordering is not specified yet. *)
     | Move of exp * exp
+    (* Call a label with a list of argument and some mysterious symbol
+       parameter. *)
     | Call of S.symbol * S.symbol * S.symbol list
+    (* Return a variable. *)
     | Ret of S.symbol
+    (* Jump to a label. *)
     | Jump of S.symbol
+    (* Jump to a label if the expression specified returns true. Else keep
+       going. *)
     | Cjump of cmpop * S.symbol * S.symbol * S.symbol
 
   and exp =
-      | Imm of int
-      | String of string
-      | Var of S.symbol
-      | Addr of exp
-      | Binop of binop * exp * exp
+    (* Immediate integral value. *)
+    | Imm of int
+    (* Immediate string value. *)
+    | String of string
+    (* Variable reference (already scoped). *)
+    | Var of S.symbol
+    (* Computed address. *)
+    | Addr of exp
+    (* Some binary expression. *)
+    | Binop of binop * exp * exp
 
   and binop = Plus | Minus | Times | Div
 
