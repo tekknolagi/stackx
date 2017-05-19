@@ -74,12 +74,8 @@ stmt:
   | KReturn expr SEMICOLON
       { Ast.AST.Return $2 }
 ;
-stmts:
-  /* empty */         { [] }
-  | stmts stmt        { $1 @ [$2] }
-;
 block:
-  LCURLY stmts RCURLY { $2 }
+  LCURLY list(stmt) RCURLY { $2 }
 ;
 fundef:
   KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON type_ block
