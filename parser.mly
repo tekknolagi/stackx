@@ -25,7 +25,7 @@
 %type <Ast.AST.t> main
 %%
 main:
-  program EOF { Ast.AST.Prog $1 }
+  list(program_item) EOF { Ast.AST.Prog $1 }
 ;
 expr:
     INT                     { Ast.AST.IntLit $1 }
@@ -42,13 +42,8 @@ expr:
   | expr LTE expr           { Ast.AST.(CompOper (Lte, $1, $3)) }
   | expr GTE expr           { Ast.AST.(CompOper (Gte, $1, $3)) }
   | expr EQ expr            { Ast.AST.(CompOper (Eq, $1, $3)) }
-  | VAR LPAREN actuals RPAREN { Ast.AST.Funcall ($1, $3) }
+  | VAR LPAREN separated_list(COMMA, expr) RPAREN { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
-;
-actuals:
-  /* empty */       { [] }
-  | expr            { [$1] }
-  | expr COMMA actuals { $1 :: $3 }
 ;
 type_:
     TVoid { Ast.Type.Void }
@@ -86,21 +81,12 @@ stmts:
 block:
   LCURLY stmts RCURLY { $2 }
 ;
-formals:
-  /* empty */       { [] }
-  | vardecl         { [$1] }
-  | vardecl COMMA formals { $1 :: $3 }
-;
 fundef:
-  KFunc VAR LPAREN formals RPAREN COLON type_ block
+  KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON type_ block
       { Ast.AST.Fun ($2, $4, $7, $8) }
 ;
 program_item:
   fundef          { $1 }
   | KConst vardecl EQUALS expr SEMICOLON
       { Ast.AST.Const ($2, $4) }
-;
-program:
-  /* empty */       { [] }
-  | program_item program { $1 :: $2 }
 ;
