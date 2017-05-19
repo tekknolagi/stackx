@@ -42,29 +42,26 @@ expr:
   | expr LTE expr           { Ast.AST.(CompOper (Lte, $1, $3)) }
   | expr GTE expr           { Ast.AST.(CompOper (Gte, $1, $3)) }
   | expr EQ expr            { Ast.AST.(CompOper (Eq, $1, $3)) }
-  | VAR LPAREN separated_list(COMMA, expr) RPAREN { Ast.AST.Funcall ($1, $3) }
+  | VAR LPAREN separated_list(COMMA, expr) RPAREN
+        { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
 ;
 type_:
-    TVoid { Ast.Type.Void }
-  | TInt { Ast.Type.Int }
-  | TString { Ast.Type.String }
-  | TBool { Ast.Type.Bool }
+    TVoid       { Ast.Type.Void }
+  | TInt        { Ast.Type.Int }
+  | TString     { Ast.Type.String }
+  | TBool       { Ast.Type.Bool }
 ;
 vardecl:
     VAR COLON type_ { $1, $3 }
-;
-const:
-  | KConst vardecl EQUALS expr SEMICOLON
-      { Ast.AST.(Assignment (LConst, $2, $4)) }
 ;
 stmt:
   expr SEMICOLON
       { Ast.AST.Exp $1 }
   | KLet vardecl EQUALS expr SEMICOLON
       { Ast.AST.(Assignment (LLet, $2, $4)) }
-  | const
-      { $1 }
+  | KConst vardecl EQUALS expr SEMICOLON
+      { Ast.AST.(Assignment (LConst, $2, $4)) }
   | VAR SETEQ expr SEMICOLON
       { Ast.AST.SetEq ($1, $3) }
   | KIf LPAREN expr RPAREN block KElse block
@@ -77,12 +74,9 @@ stmt:
 block:
   LCURLY list(stmt) RCURLY { $2 }
 ;
-fundef:
-  KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON type_ block
-      { Ast.AST.Fun ($2, $4, $7, $8) }
-;
 program_item:
-  fundef          { $1 }
+    KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON type_ block
+      { Ast.AST.Fun ($2, $4, $7, $8) }
   | KConst vardecl EQUALS expr SEMICOLON
       { Ast.AST.Const ($2, $4) }
 ;
