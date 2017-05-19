@@ -9,7 +9,7 @@
 %token LCURLY RCURLY
 %token COLON SEMICOLON
 %token COMMA
-%token EQUALS
+%token EQUALS SETEQ
 %token EOL EOF
 %right LT LTE GT GTE
 %right EQ
@@ -62,6 +62,8 @@ stmt:
       { Ast.AST.(Assignment (LLet, $2, $4)) }
   | const
       { $1 }
+  | VAR SETEQ expr SEMICOLON
+      { Ast.AST.SetEq ($1, $3) }
   | KIf LPAREN expr RPAREN block KElse block
       { Ast.AST.IfElse ($3, $5, $7) }
   | KIf LPAREN expr RPAREN block

@@ -32,6 +32,7 @@ rule token = parse
   | '='            { EQUALS }
   | '<'            { LT }
   | '>'            { GT }
+  | ":="           { SETEQ }
   | "<="           { LTE }
   | ">="           { GTE }
   | "=="           { EQ }
