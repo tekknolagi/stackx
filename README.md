@@ -17,8 +17,9 @@ See tests.ml to see what that binary does.
 
 ### In order to see AST output in console:
 
-1. `ocaml` or `utop`
-2. In the shell:
+1. `make clean` and `make`
+2. `ocaml` or `utop`
+3. In the shell:
 
    1. `#load "lexer.cmo";;`
    2. `#load "parser.cmo";;`
