@@ -26,7 +26,9 @@ let () =
   a (func_s "a && 1 + 2 >3;")
     (exp_v (CompOper (And, Var "a", (CompOper (Gt, (MathOper (Plus, IntLit 1, IntLit 2)), IntLit 3)))));
   a "const a : int = 5; func b () : bool { 1; }"
-    (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])])
+    (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])]);
+  a "const a : int = 5; func b () : bool { }"
+    (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [])])
   )
 
 let bigP s =
