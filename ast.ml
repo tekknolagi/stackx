@@ -27,9 +27,12 @@ module AST = struct
     | Lte
     | Gte
     | Eq
+    | And
+    | Or
   let string_of_cop = function
     | Lt -> "<" | Gt -> ">"
     | Lte -> "<=" | Gte -> ">=" | Eq -> "=="
+    | And -> "&&" | Or -> "||"
 
   type exp =
     | IntLit of int
