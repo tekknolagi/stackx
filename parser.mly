@@ -4,7 +4,7 @@
 %token PLUS MINUS TIMES DIV
 %token LT LTE GT GTE EQ
 %token KFor KFunc KReturn KConst KLet KIf KElse
-%token TInt TString TBool
+%token TVoid TInt TString TBool
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
@@ -44,7 +44,8 @@ actuals:
   | expr COMMA actuals { $1 :: $3 }
 ;
 type_:
-    TInt { Ast.Type.Int }
+    TVoid { Ast.Type.Void }
+  | TInt { Ast.Type.Int }
   | TString { Ast.Type.String }
   | TBool { Ast.Type.Bool }
 ;

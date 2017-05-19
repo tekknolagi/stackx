@@ -13,6 +13,7 @@ rule token = parse
   | "let"          { KLet }
   | "if"           { KIf }
   | "else"         { KElse }
+  | "void"         { TVoid }
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }

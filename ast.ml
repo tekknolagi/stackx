@@ -1,10 +1,11 @@
 module Type = struct
-  type t = Int | String | Bool
+  type t = Void | Int | String | Bool
 
   let to_string = function
-    | Int -> "Int"
-    | String -> "String"
-    | Bool -> "Bool"
+    | Void -> "void"
+    | Int -> "int"
+    | String -> "string"
+    | Bool -> "bool"
 end
 
 module AST = struct
