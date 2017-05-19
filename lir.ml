@@ -1,4 +1,7 @@
 module LIR = struct
+  (* Your typical "environment" mapping names (strings) to unique identifiers.
+     We are ensuring uniqueness by using a global counter that gets incremented
+     for every new variable. This should help take care of scoping. *)
   module SymbolTable = struct
     type id = int
     type name = string
