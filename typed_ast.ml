@@ -48,12 +48,14 @@ module Typed_AST = struct
     let type_of tyenv e =
       let rec tyApply formals actuals =
         match (formals, actuals) with
+        | (Arrow [_], [_]) -> raise @@ TypeMismatch "too many arguments"
         | (Arrow (f::restFormals), a::restActuals) ->
             if a=f then tyApply (Arrow restFormals) restActuals
             else raise @@ TypeMismatch ("mismatch in function call. expected "
                                         ^ string_of_ty f ^ " but got "
                                         ^ string_of_ty a)
         | (Arrow [t], []) -> t
+        | (Arrow _, ls) -> raise @@ TypeMismatch "too many arguments"
         | _ -> raise Unhandled
       in
       let rec ty = function
