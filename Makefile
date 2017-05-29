@@ -2,6 +2,9 @@ all: tests
 
 .PHONY: all tests
 
+typechecker: tests typed_ast.cmo
+	ocamlc -o typechecker parser.cmo lexer.cmo ast.cmo typed_ast.cmo
+
 tests: ast.cmo lexer.cmo parser.cmo tests.cmo
 	ocamlc -o tests ast.cmo lexer.cmo parser.cmo tests.cmo
 
@@ -24,7 +27,7 @@ parser.ml parser.mli: parser.mly
 	ocamlc -c $<
 
 clean:
-	-rm ast.cmi ast.cmo
+	-rm ast.cmi ast.cmo typed_ast.cmi typed_ast.cmo
 	-rm lexer.cmi lexer.cmo lexer.ml
 	-rm parser.cmi parser.cmo parser.ml parser.mli
 	-rm tests tests.cmi tests.cmo
