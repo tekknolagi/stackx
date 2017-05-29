@@ -56,7 +56,7 @@ module Typed_AST = struct
                                         ^ string_of_ty a)
         | (Arrow [t], []) -> t
         | (Arrow _, ls) -> raise @@ TypeMismatch "too many arguments"
-        | _ -> raise Unhandled
+        | (Prim _, _) -> raise @@ TypeMismatch "non-function variable called as function"
       in
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
