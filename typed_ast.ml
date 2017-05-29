@@ -55,7 +55,7 @@ module Typed_AST = struct
                                         ^ string_of_ty f ^ " but got "
                                         ^ string_of_ty a)
         | (Arrow [t], []) -> t
-        | (Arrow _, ls) -> raise @@ TypeMismatch "too many arguments"
+        | (Arrow _, ls) -> raise @@ TypeMismatch "too few arguments"
         | (Prim _, _) -> raise @@ TypeMismatch "non-function variable called as function"
       in
       let rec ty = function
@@ -78,6 +78,8 @@ module Typed_AST = struct
           (match (ty e1, ty e2) with
           | (Prim Ast.Type.Int, Prim Ast.Type.Int) -> Prim Ast.Type.Bool
           | _ -> raise @@ TypeMismatch "ComparisonOps expect ints")
+      | Funcall (f, []) ->
+          tyApply (ty @@ Var f) [Prim Ast.Type.Void]
       | Funcall (f, actuals) ->
           tyApply (ty @@ Var f) (List.map ty actuals)
       in ty e
@@ -118,10 +120,12 @@ let () =
   let basis = [
     "*", Arrow [Prim Int; Prim Int; Prim Int];
     "thing", Arrow [Prim Int; Prim Int; Prim Bool];
+    "voidf", Arrow [Prim Void; Prim Bool]
   ]
   in
   let prog = parse
-  "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
+  (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
+  "func main () : bool { return voidf(); }"
   in
   let progty = check basis prog in
   print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") progty)
