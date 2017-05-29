@@ -84,7 +84,7 @@ module Typed_AST = struct
           tyApply (ty @@ Var f) (List.map ty actuals)
       in ty e
     in
-    let check_statement t statement tyenv =
+    let rec check_statement t statement tyenv =
       match statement with
       | Return e ->
          (match type_of tyenv e with
@@ -93,6 +93,14 @@ module Typed_AST = struct
                                         ^ "type. found " ^ string_of_ty t'
                                         ^ " but expected " ^ string_of_ty t)
          )
+      | IfElse (cond, iftrue, iffalse) ->
+          (match type_of tyenv cond with
+          | Prim Ast.Type.Bool ->
+              (ignore @@ List.fold_right (check_statement t) iftrue tyenv;
+               ignore @@ List.fold_right (check_statement t) iffalse tyenv;
+               tyenv)
+          | _ -> raise @@ TypeMismatch "if condition must have type bool")
+      | If (cond, iftrue) -> check_statement t (IfElse (cond, iftrue, [])) tyenv
       | _ -> raise Unhandled
     in
     let check_fun t body tyenv =
@@ -125,7 +133,8 @@ let () =
   in
   let prog = parse
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
-  "func main () : bool { return voidf(); }"
+  (* "func main () : bool { return voidf(); }" *)
+  "func main () : int { if (5 < 3) { return 12; } }"
   in
   let progty = check basis prog in
   print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") progty)
