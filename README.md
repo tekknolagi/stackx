@@ -10,10 +10,12 @@
 ### Steps to run:
 
 1. `./tests`
+2. `./typechecker`
 
 (should produce 0 output and 0 exit code)
 
-See tests.ml to see what that binary does.
+See [tests.ml](tests.ml) and [typed_ast.ml](typed_ast.ml) to see what the
+binaries do.
 
 ### In order to see AST output in console:
 
