@@ -124,7 +124,17 @@ module Typed_AST = struct
     let basis = Ast.Type.([
       "true", Prim Bool;
       "false", Prim Bool;
+      "+", Arrow [Prim Int; Prim Int; Prim Int];
+      "-", Arrow [Prim Int; Prim Int; Prim Int];
       "*", Arrow [Prim Int; Prim Int; Prim Int];
+      "/", Arrow [Prim Int; Prim Int; Prim Int];
+      "==", Arrow [Prim Int; Prim Int; Prim Bool];
+      "<",  Arrow [Prim Int; Prim Int; Prim Bool];
+      "<=", Arrow [Prim Int; Prim Int; Prim Bool];
+      ">",  Arrow [Prim Int; Prim Int; Prim Bool];
+      ">=", Arrow [Prim Int; Prim Int; Prim Bool];
+      "&&", Arrow [Prim Bool; Prim Bool; Prim Bool];
+      "||", Arrow [Prim Bool; Prim Bool; Prim Bool];
       "thing", Arrow [Prim Int; Prim Int; Prim Bool];
       "voidf", Arrow [Prim Void; Prim Bool]
     ])
