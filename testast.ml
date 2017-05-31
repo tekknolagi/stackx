@@ -8,7 +8,7 @@ type exp = [
 let rec transform = function
   | `Lit i -> `Lit i
   | `InfixOper (o, e1, e2) -> `InfixOper (o, transform e1, transform e2)
-  | `PrefixOper (`Minus, e) -> `InfixOper (`Minus, `Lit 0, transform e)
+  | `PrefixOper (o, e) -> `InfixOper (o, `Lit 0, transform e)
 
 let rec eval = function
   | `Lit i -> i
