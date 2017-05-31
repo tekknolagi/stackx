@@ -98,10 +98,10 @@ module Typed_AST = struct
       (* | Assignment (_, (n, t), e) when exists n -> err *)
       | Assignment (_, (n, t), e) ->
           (match type_of tyenv e with
-          | t' when t'=(Prim t) -> (n, Prim t)::tyenv
-          | t' ->
+          | tyE when tyE=(Prim t) -> (n, Prim t)::tyenv
+          | tyE ->
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
-                                     ^ string_of_ty t' ^ " but expected "
+                                     ^ string_of_ty tyE ^ " but expected "
                                      ^ Ast.Type.to_string t))
       (* Will exist; checked earlier in pipeline. *)
       | SetEq (n, e) ->
