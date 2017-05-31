@@ -63,10 +63,9 @@ module Typed_AST = struct
       | IntLit _ -> Prim Ast.Type.Int
       | CharLit _ -> Prim Ast.Type.Char
       | Var n -> List.assoc n tyenv
-      | PrefixOper (_, e) ->
-          (match ty e with
-          | Prim Ast.Type.Int -> Prim Ast.Type.Int
-          | _ -> raise @@ TypeMismatch "PrefixOpers expect int")
+      | PrefixOper (o, e) ->
+          let tyO = ty @@ Var ("u" ^ string_of_op o) in
+          tyApply tyO [ty e]
       | InfixOper (o, e1, e2) ->
           let tyO = ty @@ Var (string_of_op o) in
           tyApply tyO [ty e1; ty e2]
@@ -126,6 +125,7 @@ module Typed_AST = struct
       "false", Prim Bool;
       "+", Arrow [Prim Int; Prim Int; Prim Int];
       "-", Arrow [Prim Int; Prim Int; Prim Int];
+      "u-", Arrow [Prim Int; Prim Int];
       "*", Arrow [Prim Int; Prim Int; Prim Int];
       "/", Arrow [Prim Int; Prim Int; Prim Int];
       "==", Arrow [Prim Int; Prim Int; Prim Bool];
@@ -180,7 +180,7 @@ let () =
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
   (* "func main () : bool { return voidf(); }" *)
   (* "func main () : int { if (5 < 3) { return 12; } }" *)
-  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := 2*a; }"
+  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
   in
   let () = ignore @@ print_tyenv in
   (
