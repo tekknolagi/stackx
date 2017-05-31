@@ -40,6 +40,7 @@ module Typed_AST = struct
 
   exception Redefinition of string
   exception TypeMismatch of string
+  exception UnboundVariable of string
   exception Unhandled
 
   type tyenv = string * ty list
@@ -85,6 +86,7 @@ module Typed_AST = struct
       in ty e
     in
     let rec check_statement t statement tyenv =
+      let exists n = List.mem_assoc n tyenv in
       match statement with
       | Return e ->
          (match type_of tyenv e with
@@ -93,6 +95,20 @@ module Typed_AST = struct
                                         ^ "type. found " ^ string_of_ty t'
                                         ^ " but expected " ^ string_of_ty t)
          )
+      (* This is hard to check with multiple scopes... hmm *)
+      (* | Assignment (_, (n, t), e) when exists n -> err *)
+      | Assignment (_, (n, t), e) ->
+          (match type_of tyenv e with
+          | t' when t'=(Prim t) -> (n, Prim t)::tyenv
+          | t' ->
+              raise @@ TypeMismatch ("variable assignment type mismatch. found "
+                                     ^ string_of_ty t' ^ " but expected "
+                                     ^ Ast.Type.to_string t))
+      | SetEq (n, e) when not @@ exists n -> raise @@ UnboundVariable n
+      | SetEq (n, e) ->
+          (match (type_of tyenv (Var n), type_of tyenv e) with
+          | (tyN, tyE) when tyN=tyE -> tyenv
+          | _ -> raise @@ TypeMismatch ("assignment changes type of variable " ^ n))
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
@@ -104,9 +120,9 @@ module Typed_AST = struct
       | _ -> raise Unhandled
     in
     let check_fun t body tyenv =
-      ignore @@ List.fold_right (check_statement t) body tyenv
+      ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv body
     in
-    let check_def def tyenv =
+    let check_def tyenv def =
       match def with
       | Const ((n, t), e) ->
           if List.mem_assoc n tyenv then raise @@ Redefinition n
@@ -117,7 +133,7 @@ module Typed_AST = struct
           (n, Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t]))::tyenv
     in
     match p with
-    | Prog defs -> List.fold_right check_def defs basis
+    | Prog defs -> List.fold_left check_def basis defs
 end
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
@@ -126,6 +142,8 @@ let () =
   let open Ast.Type in
   let open Typed_AST in
   let basis = [
+    "true", Prim Bool;
+    "false", Prim Bool;
     "*", Arrow [Prim Int; Prim Int; Prim Int];
     "thing", Arrow [Prim Int; Prim Int; Prim Bool];
     "voidf", Arrow [Prim Void; Prim Bool]
@@ -134,7 +152,8 @@ let () =
   let prog = parse
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
   (* "func main () : bool { return voidf(); }" *)
-  "func main () : int { if (5 < 3) { return 12; } }"
+  (* "func main () : int { if (5 < 3) { return 12; } }" *)
+  "func main () : void { let a : int = 5; a := 3; }"
   in
   let progty = check basis prog in
   print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") progty)
