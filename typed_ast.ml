@@ -86,7 +86,6 @@ module Typed_AST = struct
       in ty e
     in
     let rec check_statement t tyenv stmt =
-      let exists n = List.mem_assoc n tyenv in
       match stmt with
       | Return e ->
          (match type_of tyenv e with
@@ -104,7 +103,7 @@ module Typed_AST = struct
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
                                      ^ string_of_ty t' ^ " but expected "
                                      ^ Ast.Type.to_string t))
-      | SetEq (n, e) when not @@ exists n -> raise @@ UnboundVariable n
+      (* Will exist; checked earlier in pipeline. *)
       | SetEq (n, e) ->
           (match (type_of tyenv (Var n), type_of tyenv e) with
           | (tyN, tyE) when tyN=tyE -> tyenv
