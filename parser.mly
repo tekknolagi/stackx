@@ -31,17 +31,17 @@ expr:
     INT                     { Ast.AST.IntLit $1 }
   | VAR                     { Ast.AST.Var $1 }
   | LPAREN expr RPAREN      { $2 }
-  | expr AND expr           { Ast.AST.(CompOper (And, $1, $3)) }
-  | expr OR expr            { Ast.AST.(CompOper (Or, $1, $3)) }
-  | expr TIMES expr         { Ast.AST.(MathOper (Times, $1, $3)) }
-  | expr DIV expr           { Ast.AST.(MathOper (Div, $1, $3)) }
-  | expr PLUS expr          { Ast.AST.(MathOper (Plus, $1, $3)) }
-  | expr MINUS expr         { Ast.AST.(MathOper (Minus, $1, $3)) }
-  | expr LT expr            { Ast.AST.(CompOper (Lt, $1, $3)) }
-  | expr GT expr            { Ast.AST.(CompOper (Gt, $1, $3)) }
-  | expr LTE expr           { Ast.AST.(CompOper (Lte, $1, $3)) }
-  | expr GTE expr           { Ast.AST.(CompOper (Gte, $1, $3)) }
-  | expr EQ expr            { Ast.AST.(CompOper (Eq, $1, $3)) }
+  | expr AND expr           { Ast.AST.(InfixOper (And, $1, $3)) }
+  | expr OR expr            { Ast.AST.(InfixOper (Or, $1, $3)) }
+  | expr TIMES expr         { Ast.AST.(InfixOper (Times, $1, $3)) }
+  | expr DIV expr           { Ast.AST.(InfixOper (Div, $1, $3)) }
+  | expr PLUS expr          { Ast.AST.(InfixOper (Plus, $1, $3)) }
+  | expr MINUS expr         { Ast.AST.(InfixOper (Minus, $1, $3)) }
+  | expr LT expr            { Ast.AST.(InfixOper (Lt, $1, $3)) }
+  | expr GT expr            { Ast.AST.(InfixOper (Gt, $1, $3)) }
+  | expr LTE expr           { Ast.AST.(InfixOper (Lte, $1, $3)) }
+  | expr GTE expr           { Ast.AST.(InfixOper (Gte, $1, $3)) }
+  | expr EQ expr            { Ast.AST.(InfixOper (Eq, $1, $3)) }
   | VAR LPAREN separated_list(COMMA, expr) RPAREN
         { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }

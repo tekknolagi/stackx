@@ -67,18 +67,9 @@ module Typed_AST = struct
           (match ty e with
           | Prim Ast.Type.Int -> Prim Ast.Type.Int
           | _ -> raise @@ TypeMismatch "PrefixOpers expect int")
-      | MathOper (_, e1, e2) ->
-          (match (ty e1, ty e2) with
-          | (Prim Ast.Type.Int, Prim Ast.Type.Int) -> Prim Ast.Type.Int
-          | _ -> raise @@ TypeMismatch "MathOpers expect ints")
-      | CompOper (c, e1, e2) when c=And || c=Or ->
-          (match (ty e1, ty e2) with
-          | (Prim Ast.Type.Bool, Prim Ast.Type.Bool) -> Prim Ast.Type.Bool
-          | _ -> raise @@ TypeMismatch "And/Or expect 2 bools")
-      | CompOper (_, e1, e2) ->
-          (match (ty e1, ty e2) with
-          | (Prim Ast.Type.Int, Prim Ast.Type.Int) -> Prim Ast.Type.Bool
-          | _ -> raise @@ TypeMismatch "ComparisonOps expect ints")
+      | InfixOper (o, e1, e2) ->
+          let tyO = ty @@ Var (string_of_op o) in
+          tyApply tyO [ty e1; ty e2]
       | Funcall (f, []) ->
           tyApply (ty @@ Var f) [Prim Ast.Type.Void]
       | Funcall (f, actuals) ->
@@ -179,7 +170,7 @@ let () =
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
   (* "func main () : bool { return voidf(); }" *)
   (* "func main () : int { if (5 < 3) { return 12; } }" *)
-  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := 2; }"
+  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := 2*a; }"
   in
   let () = ignore @@ print_tyenv in
   (
