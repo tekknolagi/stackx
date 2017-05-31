@@ -85,9 +85,9 @@ module Typed_AST = struct
           tyApply (ty @@ Var f) (List.map ty actuals)
       in ty e
     in
-    let rec check_statement t statement tyenv =
+    let rec check_statement t tyenv stmt =
       let exists n = List.mem_assoc n tyenv in
-      match statement with
+      match stmt with
       | Return e ->
          (match type_of tyenv e with
          | t' when t'=t -> tyenv
@@ -112,15 +112,15 @@ module Typed_AST = struct
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
-              (ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv iftrue;
-               ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv iffalse;
+              (ignore @@ List.fold_left (check_statement t) tyenv iftrue;
+               ignore @@ List.fold_left (check_statement t) tyenv iffalse;
                tyenv)
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
-      | If (cond, iftrue) -> check_statement t (IfElse (cond, iftrue, [])) tyenv
+      | If (cond, iftrue) -> check_statement t tyenv (IfElse (cond, iftrue, []))
       | _ -> raise Unhandled
     in
     let check_fun t body tyenv =
-      ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv body
+      ignore @@ List.fold_left (check_statement t) tyenv body
     in
     let check_def tyenv = function
       | Const ((n, t), e) ->
