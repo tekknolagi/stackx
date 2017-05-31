@@ -44,7 +44,7 @@ module Typed_AST = struct
   exception Unhandled
 
   type tyenv = string * ty list
-  let check basis p =
+  let typecheck basis p =
     let open Ast.AST in
     let type_of tyenv e =
       let rec tyApply formals actuals =
@@ -112,8 +112,8 @@ module Typed_AST = struct
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
-              (ignore @@ List.fold_right (check_statement t) iftrue tyenv;
-               ignore @@ List.fold_right (check_statement t) iffalse tyenv;
+              (ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv iftrue;
+               ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv iffalse;
                tyenv)
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
       | If (cond, iftrue) -> check_statement t (IfElse (cond, iftrue, [])) tyenv
@@ -122,8 +122,7 @@ module Typed_AST = struct
     let check_fun t body tyenv =
       ignore @@ List.fold_left (fun env stmt -> check_statement t stmt env) tyenv body
     in
-    let check_def tyenv def =
-      match def with
+    let check_def tyenv = function
       | Const ((n, t), e) ->
           if List.mem_assoc n tyenv then raise @@ Redefinition n
           else (n,Prim t)::tyenv
@@ -133,7 +132,36 @@ module Typed_AST = struct
           (n, Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t]))::tyenv
     in
     match p with
-    | Prog defs -> List.fold_left check_def basis defs
+    | Prog defs -> ignore @@ List.fold_left check_def basis defs
+
+    exception SettingConst of string
+
+    let constcheck p =
+      let open Ast.AST in
+      let rec check_statement env = function
+        | Assignment (LConst, (n, _), _) -> (n, `Const)::env
+        | Assignment (LLet, (n, _), _) -> (n, `Mut)::env
+        | SetEq (n, _) when not @@ List.mem_assoc n env -> raise @@ UnboundVariable n
+        | SetEq (n, _) when `Const=List.assoc n env -> raise @@ SettingConst n
+        | SetEq (n, _) when `Mut=List.assoc n env -> env
+        | IfElse (cond, iftrue, iffalse) ->
+            (ignore @@ List.fold_left check_statement env iftrue;
+             ignore @@ List.fold_left check_statement env iftrue;
+             env)
+        | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
+        | _ -> env
+      in
+      let check_fun body env =
+        ignore @@ List.fold_left check_statement env body
+      in
+      let check_def env = function
+        | Const ((n, _), _) -> (n, `Const)::env
+        | Fun (n, _, _, body) ->
+            let () = check_fun body env in
+            (n, `Const)::env
+      in
+      match p with
+      | Prog defs -> ignore @@ List.fold_left check_def [] defs
 end
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
@@ -149,11 +177,15 @@ let () =
     "voidf", Arrow [Prim Void; Prim Bool]
   ]
   in
+  let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env) in
   let prog = parse
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
   (* "func main () : bool { return voidf(); }" *)
   (* "func main () : int { if (5 < 3) { return 12; } }" *)
-  "func main () : void { let a : int = 5; a := 3; }"
+  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := 2; }"
   in
-  let progty = check basis prog in
-  print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") progty)
+  let () = ignore @@ print_tyenv in
+  (
+    constcheck prog;
+    typecheck basis prog;
+  )
