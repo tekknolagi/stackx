@@ -151,13 +151,11 @@ module Typed_AST = struct
         | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
         | _ -> env
       in
-      let check_fun body env =
-        ignore @@ List.fold_left check_statement env body
-      in
+      let check_fun body env = List.fold_left check_statement env body in
       let check_def env = function
         | Const ((n, _), _) -> (n, `Const)::env
         | Fun (n, _, _, body) ->
-            let () = check_fun body env in
+            let () = ignore @@ check_fun body env in
             (n, `Const)::env
       in
       match p with
