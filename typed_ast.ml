@@ -135,30 +135,30 @@ module Typed_AST = struct
 
     exception SettingConst of string
 
-    let constcheck p =
-      let open Ast.AST in
-      let rec check_statement env = function
-        | Assignment (LConst, (n, _), _) -> (n, `Const)::env
-        | Assignment (LLet, (n, _), _) -> (n, `Mut)::env
-        | SetEq (n, _) when not @@ List.mem_assoc n env -> raise @@ UnboundVariable n
-        | SetEq (n, _) when `Const=List.assoc n env -> raise @@ SettingConst n
-        | SetEq (n, _) when `Mut=List.assoc n env -> env
-        | IfElse (cond, iftrue, iffalse) ->
-            (ignore @@ List.fold_left check_statement env iftrue;
-             ignore @@ List.fold_left check_statement env iftrue;
-             env)
-        | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
-        | _ -> env
-      in
-      let check_fun body env = List.fold_left check_statement env body in
-      let check_def env = function
-        | Const ((n, _), _) -> (n, `Const)::env
-        | Fun (n, _, _, body) ->
-            let () = ignore @@ check_fun body env in
-            (n, `Const)::env
-      in
-      match p with
-      | Prog defs -> ignore @@ List.fold_left check_def [] defs
+  let constcheck p =
+    let open Ast.AST in
+    let rec check_statement env = function
+      | Assignment (LConst, (n, _), _) -> (n, `Const)::env
+      | Assignment (LLet, (n, _), _) -> (n, `Mut)::env
+      | SetEq (n, _) when not @@ List.mem_assoc n env -> raise @@ UnboundVariable n
+      | SetEq (n, _) when `Const=List.assoc n env -> raise @@ SettingConst n
+      | SetEq (n, _) when `Mut=List.assoc n env -> env
+      | IfElse (cond, iftrue, iffalse) ->
+          (ignore @@ List.fold_left check_statement env iftrue;
+           ignore @@ List.fold_left check_statement env iftrue;
+           env)
+      | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
+      | _ -> env
+    in
+    let check_fun body env = List.fold_left check_statement env body in
+    let check_def env = function
+      | Const ((n, _), _) -> (n, `Const)::env
+      | Fun (n, _, _, body) ->
+          let () = ignore @@ check_fun body env in
+          (n, `Const)::env
+    in
+    match p with
+    | Prog defs -> ignore @@ List.fold_left check_def [] defs
 end
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
