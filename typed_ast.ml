@@ -44,7 +44,7 @@ module Typed_AST = struct
   exception Unhandled
 
   type tyenv = string * ty list
-  let typecheck basis p =
+  let typecheck p =
     let open Ast.AST in
     let type_of tyenv e =
       let rec tyApply formals actuals =
@@ -130,10 +130,18 @@ module Typed_AST = struct
           let () = check_fun (Prim t) body newenv in
           (n, Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t]))::tyenv
     in
+    let basis = Ast.Type.([
+      "true", Prim Bool;
+      "false", Prim Bool;
+      "*", Arrow [Prim Int; Prim Int; Prim Int];
+      "thing", Arrow [Prim Int; Prim Int; Prim Bool];
+      "voidf", Arrow [Prim Void; Prim Bool]
+    ])
+    in
     match p with
     | Prog defs -> ignore @@ List.fold_left check_def basis defs
 
-    exception SettingConst of string
+  exception SettingConst of string
 
   let constcheck p =
     let open Ast.AST in
@@ -166,14 +174,6 @@ let parse s = Parser.main Lexer.token @@ Lexing.from_string s
 let () =
   let open Ast.Type in
   let open Typed_AST in
-  let basis = [
-    "true", Prim Bool;
-    "false", Prim Bool;
-    "*", Arrow [Prim Int; Prim Int; Prim Int];
-    "thing", Arrow [Prim Int; Prim Int; Prim Bool];
-    "voidf", Arrow [Prim Void; Prim Bool]
-  ]
-  in
   let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env) in
   let prog = parse
   (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
@@ -184,5 +184,5 @@ let () =
   let () = ignore @@ print_tyenv in
   (
     constcheck prog;
-    typecheck basis prog;
+    typecheck prog;
   )
