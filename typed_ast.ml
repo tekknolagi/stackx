@@ -183,7 +183,5 @@ let () =
   "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
   in
   let () = ignore @@ print_tyenv in
-  (
-    constcheck prog;
-    typecheck prog;
-  )
+  let passes = [constcheck; typecheck] in
+  List.iter (fun p -> p prog) passes
