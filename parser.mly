@@ -14,6 +14,7 @@
 %token EQUALS
 %token EOL EOF
 
+%left EQUALS
 %right OR
 %right AND
 %right EQ
