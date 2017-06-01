@@ -1,11 +1,13 @@
 /* File parser.mly */
 %token <int> INT
+%token <char> CHAR
 %token <string> VAR
 %token PLUS MINUS TIMES DIV
 %token LT LTE GT GTE EQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
 %token TVoid TInt TString TBool
+%token SQUOTE
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
@@ -29,6 +31,7 @@ main:
 ;
 expr:
     INT                     { Ast.AST.IntLit $1 }
+  | CHAR                    { Ast.AST.CharLit $1 }
   | VAR                     { Ast.AST.Var $1 }
   | LPAREN expr RPAREN      { $2 }
   | expr AND expr           { Ast.AST.(InfixOper (And, $1, $3)) }

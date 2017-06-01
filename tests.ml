@@ -37,6 +37,7 @@ let () =
   a (func_s "a := 2 + 3;") (stat_v (SetEq("a", (InfixOper (Plus, IntLit 2, IntLit 3)))));
   a (func_s "a && 1 + 2 >3;")
     (exp_v (InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)))));
+  a (func_s "'c';") (exp_v (CharLit 'c'));
   a "const a : int = 5; func b () : bool { 1; }"
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])]);
   a "const a : int = 5; func b () : bool { }"

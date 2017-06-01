@@ -3,6 +3,7 @@
 open Parser        (* The type token is defined in parser.mli *)
 exception Eof
 }
+
 rule token = parse
     [' ' '\t']     { token lexbuf }     (* skip blanks *)
   | ['\n' ]        { EOL }
@@ -17,6 +18,7 @@ rule token = parse
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }
+  | '\'' _ '\'' as c { CHAR(c.[1]) }
   | ['a'-'z''A'-'Z']+ as lxm { VAR(lxm) }
   | ['0'-'9']+ as lxm { INT(int_of_string lxm) }
   | '+'            { PLUS }
@@ -33,6 +35,7 @@ rule token = parse
   | '='            { EQUALS }
   | '<'            { LT }
   | '>'            { GT }
+  | '\''           { SQUOTE }
   | "||"           { OR }
   | "&&"           { AND }
   | ":="           { SETEQ }
