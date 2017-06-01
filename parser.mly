@@ -7,12 +7,11 @@
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
 %token TVoid TInt TString TBool TChar
-%token SQUOTE
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
 %token COMMA
-%token EQUALS SETEQ
+%token EQUALS
 %token EOL EOF
 
 %right OR
@@ -66,7 +65,7 @@ stmt:
       { Ast.AST.(Let (LLet, $2, $4)) }
   | KConst vardecl EQUALS expr SEMICOLON
       { Ast.AST.(Let (LConst, $2, $4)) }
-  | VAR SETEQ expr SEMICOLON
+  | VAR EQUALS expr SEMICOLON
       { Ast.AST.SetEq ($1, $3) }
   | KIf LPAREN expr RPAREN block KElse block
       { Ast.AST.IfElse ($3, $5, $7) }

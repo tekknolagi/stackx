@@ -34,7 +34,7 @@ let () =
   a (func_s "return a(1);") (stat_v (Return (Funcall ("a", [IntLit 1]))));
   a (func_s "1 < 3;") (exp_v (InfixOper (Lt, IntLit 1, IntLit 3)));
   a (func_s "a + b;") (exp_v (InfixOper (Plus, Var "a", Var "b")));
-  a (func_s "a := 2 + 3;") (stat_v (SetEq("a", (InfixOper (Plus, IntLit 2, IntLit 3)))));
+  a (func_s "a = 2 + 3;") (stat_v (SetEq("a", (InfixOper (Plus, IntLit 2, IntLit 3)))));
   a (func_s "a && 1 + 2 >3;")
     (exp_v (InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)))));
   a (func_s "'c';") (exp_v (CharLit 'c'));
@@ -42,7 +42,7 @@ let () =
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])]);
   a "const a : int = 5; func b () : bool { }"
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [])]);
-  chkpass "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
+  chkpass "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }"
           [constcheck; typecheck];
   chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
           [constcheck; typecheck];
@@ -56,8 +56,8 @@ let () =
           [typecheck];
   chkfail "func main () : int { if (5 < 3) { return true; } }"
           typecheck;
-  chkfail "func main () : int { const a : int = 4; a := 3; }"
+  chkfail "func main () : int { const a : int = 4; a = 3; }"
           constcheck;
-  chkfail "func main () : int { a := 3; }"
+  chkfail "func main () : int { a = 3; }"
           constcheck;
   )
