@@ -24,6 +24,6 @@ See [tests.ml](tests.ml) to see what the binary does.
    1. `#load "lexer.cmo";;`
    2. `#load "parser.cmo";;`
    3. `#load "tests.cmo";;`
-   4. `Tests.bigP "func a () : int { 1; }";;`
+   4. `Tests.parse "func a () : int { 1; }";;`
 
    ...you get the idea.

@@ -39,11 +39,10 @@ let () =
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [])]);
   chkpass "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
           [constcheck; typecheck];
+  chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
+          [constcheck; typecheck];
+  chkpass "func main () : bool { return voidf(); }"
+          [constcheck; typecheck];
+  chkpass "func main () : int { if (5 < 3) { return 12; } }"
+          [constcheck; typecheck];
   )
-
-  (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
-  (* "func main () : bool { return voidf(); }" *)
-  (* "func main () : int { if (5 < 3) { return 12; } }" *)
-
-let bigP s =
-  Parser.main Lexer.token @@ Lexing.from_string s
