@@ -60,4 +60,6 @@ let () =
           constcheck;
   chkfail "func main () : int { a = 3; }"
           constcheck;
+  chkfail "func main () : int { let a : int = 4; let a : int = 3; }"
+          typecheck;
   )

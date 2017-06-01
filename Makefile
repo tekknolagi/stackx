@@ -2,8 +2,8 @@ all: tests
 
 .PHONY: all tests
 
-tests: ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
-	ocamlc -o tests ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
+tests: env.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
+	ocamlc -o tests env.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml

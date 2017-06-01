@@ -62,7 +62,7 @@ module Typed_AST = struct
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
       | CharLit _ -> Prim Ast.Type.Char
-      | Var n -> List.assoc n tyenv
+      | Var n -> Env.assoc n tyenv
       | PrefixOper (o, e) ->
           let tyO = ty @@ Var ("u" ^ string_of_op o) in
           tyApply tyO [ty e]
@@ -84,11 +84,10 @@ module Typed_AST = struct
                                         ^ "type. found " ^ string_of_ty t'
                                         ^ " but expected " ^ string_of_ty t)
          )
-      (* This is hard to check with multiple scopes... hmm *)
-      (* | Let (_, (n, t), e) when exists n -> err *)
+      | Let (_, (n, t), e) when Env.exists_curframe n tyenv -> raise @@ Redefinition n
       | Let (_, (n, t), e) ->
           (match type_of tyenv e with
-          | tyE when tyE=(Prim t) -> (n, Prim t)::tyenv
+          | tyE when tyE=(Prim t) -> Env.bind n (Prim t) tyenv
           | tyE ->
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
                                      ^ string_of_ty tyE ^ " but expected "
@@ -113,14 +112,14 @@ module Typed_AST = struct
     in
     let check_def tyenv = function
       | Const ((n, t), e) ->
-          if List.mem_assoc n tyenv then raise @@ Redefinition n
-          else (n,Prim t)::tyenv
+          if Env.exists n tyenv then raise @@ Redefinition n
+          else Env.bind n (Prim t) tyenv
       | Fun (n, formals, t, body) ->
-          let newenv = (List.map (fun (n, t) -> (n, Prim t)) formals)@tyenv in
+          let newenv = (List.map (fun (n, t) -> (n, Prim t)) formals)::tyenv in
           let () = check_fun (Prim t) body newenv in
-          (n, Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t]))::tyenv
+          Env.bind n (Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t])) tyenv
     in
-    let basis = Ast.Type.([
+    let basis = Ast.Type.([[
       "true", Prim Bool;
       "false", Prim Bool;
       "+", Arrow [Prim Int; Prim Int; Prim Int];
@@ -137,7 +136,7 @@ module Typed_AST = struct
       "||", Arrow [Prim Bool; Prim Bool; Prim Bool];
       "thing", Arrow [Prim Int; Prim Int; Prim Bool];
       "voidf", Arrow [Prim Void; Prim Bool]
-    ])
+    ]])
     in
     match p with
     | Prog defs -> ignore @@ List.fold_left check_def basis defs
@@ -147,11 +146,11 @@ module Typed_AST = struct
   let constcheck p =
     let open Ast.AST in
     let rec check_statement env = function
-      | Let (LConst, (n, _), _) -> (n, `Const)::env
-      | Let (LLet, (n, _), _) -> (n, `Mut)::env
-      | SetEq (n, _) when not @@ List.mem_assoc n env -> raise @@ UnboundVariable n
-      | SetEq (n, _) when `Const=List.assoc n env -> raise @@ SettingConst n
-      | SetEq (n, _) when `Mut=List.assoc n env -> env
+      | Let (LConst, (n, _), _) -> Env.bind n `Const env
+      | Let (LLet, (n, _), _) -> Env.bind n `Mut env
+      | SetEq (n, _) when Env.unbound n env -> raise @@ UnboundVariable n
+      | SetEq (n, _) when `Const=Env.assoc n env -> raise @@ SettingConst n
+      | SetEq (n, _) when `Mut=Env.assoc n env -> env
       | IfElse (cond, iftrue, iffalse) ->
           (ignore @@ List.fold_left check_statement env iftrue;
            ignore @@ List.fold_left check_statement env iftrue;
@@ -161,11 +160,11 @@ module Typed_AST = struct
     in
     let check_fun body env = List.fold_left check_statement env body in
     let check_def env = function
-      | Const ((n, _), _) -> (n, `Const)::env
+      | Const ((n, _), _) -> Env.bind n `Const env
       | Fun (n, _, _, body) ->
           let () = ignore @@ check_fun body env in
-          (n, `Const)::env
+          Env.bind n `Const env
     in
     match p with
-    | Prog defs -> ignore @@ List.fold_left check_def [] defs
+    | Prog defs -> ignore @@ List.fold_left check_def Env.empty defs
 end
