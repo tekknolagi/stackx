@@ -2,8 +2,10 @@ all: tests
 
 .PHONY: all tests
 
-tests: env.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
-	ocamlc -o tests env.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
+tests: env.cmo ast.cmo lexer.cmo parser.cmo parser_message.cmo typed_ast.cmo tests.cmo
+	ocamlfind ocamlc -package menhirLib -linkpkg -o tests \
+			         env.cmo ast.cmo lexer.cmo parser.cmo parser_message.cmo \
+					 typed_ast.cmo tests.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml
@@ -15,7 +17,15 @@ lexer.ml: lexer.mll
 	ocamllex lexer.mll
 
 parser.ml parser.mli: parser.mly
-	menhir parser.mly
+	# --table used for incremental mode
+	menhir --table parser.mly
+	# menhir --explain parser.mly --compile-errors parser.messages > parser_message.ml
+
+parser.cmi: parser.mli
+	ocamlfind ocamlc -package menhirLib -c parser.mli
+
+parser.cmo: parser.ml parser.cmi
+	ocamlfind ocamlc -package menhirLib -c parser.ml
 
 %.cmo: %.ml
 	ocamlc -c $<
