@@ -9,6 +9,10 @@ let chkpass str fs =
   let ast = parse str in
   List.iter (fun f -> f ast) fs
 
+let chkfail str f =
+  try  ignore @@ f @@ parse str
+  with e -> print_endline @@ "encountered " ^ Printexc.to_string e
+
 let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env)
 
 let func_s s = "func a() : int { " ^ s ^ "}"
@@ -45,4 +49,8 @@ let () =
           [constcheck; typecheck];
   chkpass "func main () : int { if (5 < 3) { return 12; } }"
           [constcheck; typecheck];
+  chkpass "func main () : int { if (5 < 3) { return 12; } }"
+          [constcheck; typecheck];
+  chkfail "func main () : int { if (5 < 3) { return true; } }"
+          typecheck
   )
