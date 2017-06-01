@@ -11,7 +11,8 @@
 
 1. `./tests`
 
-(should produce 0 output and 0 exit code)
+(should produce some error output -- tests that were expected to fail -- and 0
+exit code)
 
 See [tests.ml](tests.ml) to see what the binary does.
 
