@@ -73,6 +73,11 @@ module Typed_AST = struct
           tyApply (ty @@ Var f) [Prim Ast.Type.Void]
       | Funcall (f, actuals) ->
           tyApply (ty @@ Var f) (List.map ty actuals)
+      (* Will exist; checked earlier in pipeline. *)
+      | SetEq (n, e) ->
+          (match (ty (Var n), ty e) with
+          | (tyN, tyE) when tyN=tyE -> tyE
+          | _ -> raise @@ TypeMismatch ("assignment changes type of variable " ^ n))
       in ty e
     in
     let rec check_statement t tyenv stmt =
@@ -92,11 +97,6 @@ module Typed_AST = struct
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
                                      ^ string_of_ty tyE ^ " but expected "
                                      ^ Ast.Type.to_string t))
-      (* Will exist; checked earlier in pipeline. *)
-      | SetEq (n, e) ->
-          (match (type_of tyenv (Var n), type_of tyenv e) with
-          | (tyN, tyE) when tyN=tyE -> tyenv
-          | _ -> raise @@ TypeMismatch ("assignment changes type of variable " ^ n))
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
@@ -148,14 +148,15 @@ module Typed_AST = struct
     let rec check_statement env = function
       | Let (LConst, (n, _), _) -> Env.bind n `Const env
       | Let (LLet, (n, _), _) -> Env.bind n `Mut env
-      | SetEq (n, _) when Env.unbound n env -> raise @@ UnboundVariable n
-      | SetEq (n, _) when `Const=Env.assoc n env -> raise @@ SettingConst n
-      | SetEq (n, _) when `Mut=Env.assoc n env -> env
       | IfElse (cond, iftrue, iffalse) ->
           (ignore @@ List.fold_left check_statement env iftrue;
            ignore @@ List.fold_left check_statement env iftrue;
            env)
       | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
+      | Exp (SetEq (n, _)) when Env.unbound n env -> raise @@ UnboundVariable n
+      | Exp (SetEq (n, _)) when `Const=Env.assoc n env -> raise @@ SettingConst n
+      | Exp (SetEq (n, _)) when `Mut=Env.assoc n env -> env
+      | Exp (SetEq (_, e)) -> check_statement env (Exp e)
       | _ -> env
     in
     let check_fun body env = List.fold_left check_statement env body in

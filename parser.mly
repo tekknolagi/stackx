@@ -44,6 +44,7 @@ expr:
   | expr LTE expr           { Ast.AST.(InfixOper (Lte, $1, $3)) }
   | expr GTE expr           { Ast.AST.(InfixOper (Gte, $1, $3)) }
   | expr EQ expr            { Ast.AST.(InfixOper (Eq, $1, $3)) }
+  | VAR EQUALS expr         { Ast.AST.(SetEq ($1, $3)) }
   | VAR LPAREN separated_list(COMMA, expr) RPAREN
         { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
@@ -65,8 +66,6 @@ stmt:
       { Ast.AST.(Let (LLet, $2, $4)) }
   | KConst vardecl EQUALS expr SEMICOLON
       { Ast.AST.(Let (LConst, $2, $4)) }
-  | VAR EQUALS expr SEMICOLON
-      { Ast.AST.SetEq ($1, $3) }
   | KIf LPAREN expr RPAREN block KElse block
       { Ast.AST.IfElse ($3, $5, $7) }
   | KIf LPAREN expr RPAREN block

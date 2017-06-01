@@ -39,6 +39,7 @@ module AST = struct
     | PrefixOper of op * exp
     | InfixOper of op * exp * exp
     | Funcall of name * exp list
+    | SetEq of name * exp
   let rec string_of_exp = function
     | IntLit i -> string_of_int i
     | CharLit c -> "'" ^ String.make 1 c ^ "'"
@@ -52,6 +53,7 @@ module AST = struct
     | Funcall (n, es) ->
         n ^ "("
         ^ (String.concat "," @@ List.map string_of_exp es) ^ ")"
+    | SetEq (n, e) -> n ^ " = " ^ string_of_exp e
 
   type lettype =
     | LLet
@@ -59,7 +61,6 @@ module AST = struct
 
   type statement =
     | Let of lettype * var * exp
-    | SetEq of name * exp
     | If of exp * statement list
     | IfElse of exp * statement list * statement list
     | Return of exp
