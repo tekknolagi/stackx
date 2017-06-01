@@ -52,5 +52,9 @@ let () =
   chkpass "func main () : int { if (5 < 3) { return 12; } }"
           [constcheck; typecheck];
   chkfail "func main () : int { if (5 < 3) { return true; } }"
-          typecheck
+          typecheck;
+  chkfail "func main () : int { const a : int = 4; a := 3; }"
+          constcheck;
+  chkfail "func main () : int { a := 3; }"
+          constcheck;
   )
