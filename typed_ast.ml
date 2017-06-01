@@ -25,10 +25,12 @@ module Typed_AST = struct
     | And -> "&&" | Or -> "||"
 
   type ty = Prim of Ast.Type.t | Arrow of ty list
-  let rec string_of_ty = function
+  let rec string_of_ty ty =
+    let s ts = String.concat " -> " @@ List.map string_of_ty ts in
+    match ty with
     | Prim t -> Ast.Type.to_string t
-    | Arrow ts ->
-        String.concat " -> " @@ List.map string_of_ty ((Prim Ast.Type.Void)::ts)
+    | Arrow [x] -> s [Prim Ast.Type.Void; x]
+    | Arrow ts -> s ts
 
   type exp = ty * Ast.AST.exp
   let string_of_exp (t, e) = Ast.AST.string_of_exp e ^ " : " ^ string_of_ty t
@@ -50,11 +52,12 @@ module Typed_AST = struct
       let rec tyApply formals actuals =
         match (formals, actuals) with
         | (Arrow [_], [_]) -> raise @@ TypeMismatch "too many arguments"
-        | (Arrow (f::restFormals), a::restActuals) ->
-            if a=f then tyApply (Arrow restFormals) restActuals
-            else raise @@ TypeMismatch ("mismatch in function call. expected "
-                                        ^ string_of_ty f ^ " but got "
-                                        ^ string_of_ty a)
+        | (Arrow (f::restFormals), a::restActuals) when a=f ->
+            tyApply (Arrow restFormals) restActuals
+        | (Arrow (f::_), a::_) ->
+            raise @@ TypeMismatch ("mismatch in function call. expected "
+                                   ^ string_of_ty f ^ " but got "
+                                   ^ string_of_ty a)
         | (Arrow [t], []) -> t
         | (Arrow _, ls) -> raise @@ TypeMismatch "too few arguments"
         | (Prim _, _) -> raise @@ TypeMismatch "non-function variable called as function"
@@ -69,8 +72,6 @@ module Typed_AST = struct
       | InfixOper (o, e1, e2) ->
           let tyO = ty @@ Var (string_of_op o) in
           tyApply tyO [ty e1; ty e2]
-      | Funcall (f, []) ->
-          tyApply (ty @@ Var f) [Prim Ast.Type.Void]
       | Funcall (f, actuals) ->
           tyApply (ty @@ Var f) (List.map ty actuals)
       (* Will exist; checked earlier in pipeline. *)
@@ -105,7 +106,7 @@ module Typed_AST = struct
                tyenv)
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
       | If (cond, iftrue) -> check_statement t tyenv (IfElse (cond, iftrue, []))
-      | Exp _ -> tyenv
+      | Exp e -> (ignore @@ type_of tyenv e; tyenv)
     in
     let check_fun t body tyenv =
       ignore @@ List.fold_left (check_statement t) tyenv body
@@ -135,7 +136,7 @@ module Typed_AST = struct
       "&&", Arrow [Prim Bool; Prim Bool; Prim Bool];
       "||", Arrow [Prim Bool; Prim Bool; Prim Bool];
       "thing", Arrow [Prim Int; Prim Int; Prim Bool];
-      "voidf", Arrow [Prim Void; Prim Bool]
+      "voidf", Arrow [Prim Bool]
     ]])
     in
     match p with
