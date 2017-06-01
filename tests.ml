@@ -9,8 +9,11 @@ let chkpass str fs =
   let ast = parse str in
   List.iter (fun f -> f ast) fs
 
+exception ExpectedFailure of string
+
 let chkfail str f =
-  try  ignore @@ f @@ parse str
+  try  (ignore @@ f @@ parse str;
+        raise @@ ExpectedFailure str)
   with e -> print_endline @@ "encountered " ^ Printexc.to_string e
 
 let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env)
@@ -61,5 +64,7 @@ let () =
   chkfail "func main () : int { a = 3; }"
           constcheck;
   chkfail "func main () : int { let a : int = 4; let a : int = 3; }"
+          typecheck;
+  chkfail "func f (a : int) : int {} func main () : int { f(); }"
           typecheck;
   )
