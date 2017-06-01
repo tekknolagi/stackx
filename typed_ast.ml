@@ -106,7 +106,7 @@ module Typed_AST = struct
                tyenv)
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
       | If (cond, iftrue) -> check_statement t tyenv (IfElse (cond, iftrue, []))
-      | _ -> raise Unhandled
+      | Exp _ -> tyenv
     in
     let check_fun t body tyenv =
       ignore @@ List.fold_left (check_statement t) tyenv body
