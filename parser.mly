@@ -6,7 +6,7 @@
 %token LT LTE GT GTE EQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
-%token TVoid TInt TString TBool
+%token TVoid TInt TString TBool TChar
 %token SQUOTE
 %token LPAREN RPAREN
 %token LCURLY RCURLY
@@ -54,6 +54,7 @@ type_:
   | TInt        { Ast.Type.Int }
   | TString     { Ast.Type.String }
   | TBool       { Ast.Type.Bool }
+  | TChar       { Ast.Type.Char }
 ;
 vardecl:
     VAR COLON type_ { $1, $3 }

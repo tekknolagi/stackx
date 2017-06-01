@@ -52,6 +52,8 @@ let () =
           [constcheck; typecheck];
   chkpass "func main () : int { if (5 < 3) { return 12; } }"
           [constcheck; typecheck];
+  chkpass "func main () : char { return 'h'; }"
+          [typecheck];
   chkfail "func main () : int { if (5 < 3) { return true; } }"
           typecheck;
   chkfail "func main () : int { const a : int = 4; a := 3; }"
