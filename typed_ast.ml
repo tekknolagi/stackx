@@ -85,8 +85,8 @@ module Typed_AST = struct
                                         ^ " but expected " ^ string_of_ty t)
          )
       (* This is hard to check with multiple scopes... hmm *)
-      (* | Assignment (_, (n, t), e) when exists n -> err *)
-      | Assignment (_, (n, t), e) ->
+      (* | Let (_, (n, t), e) when exists n -> err *)
+      | Let (_, (n, t), e) ->
           (match type_of tyenv e with
           | tyE when tyE=(Prim t) -> (n, Prim t)::tyenv
           | tyE ->
@@ -147,8 +147,8 @@ module Typed_AST = struct
   let constcheck p =
     let open Ast.AST in
     let rec check_statement env = function
-      | Assignment (LConst, (n, _), _) -> (n, `Const)::env
-      | Assignment (LLet, (n, _), _) -> (n, `Mut)::env
+      | Let (LConst, (n, _), _) -> (n, `Const)::env
+      | Let (LLet, (n, _), _) -> (n, `Mut)::env
       | SetEq (n, _) when not @@ List.mem_assoc n env -> raise @@ UnboundVariable n
       | SetEq (n, _) when `Const=List.assoc n env -> raise @@ SettingConst n
       | SetEq (n, _) when `Mut=List.assoc n env -> env

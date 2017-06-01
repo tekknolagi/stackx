@@ -58,7 +58,7 @@ module AST = struct
     | LConst
 
   type statement =
-    | Assignment of lettype * var * exp
+    | Let of lettype * var * exp
     | SetEq of name * exp
     | If of exp * statement list
     | IfElse of exp * statement list * statement list

@@ -59,9 +59,9 @@ stmt:
   expr SEMICOLON
       { Ast.AST.Exp $1 }
   | KLet vardecl EQUALS expr SEMICOLON
-      { Ast.AST.(Assignment (LLet, $2, $4)) }
+      { Ast.AST.(Let (LLet, $2, $4)) }
   | KConst vardecl EQUALS expr SEMICOLON
-      { Ast.AST.(Assignment (LConst, $2, $4)) }
+      { Ast.AST.(Let (LConst, $2, $4)) }
   | VAR SETEQ expr SEMICOLON
       { Ast.AST.SetEq ($1, $3) }
   | KIf LPAREN expr RPAREN block KElse block

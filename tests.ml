@@ -11,7 +11,8 @@ let exp_v e = stat_v (Exp e)
 let () =
   (
   a (func_s "1 + 2 - 3;") (exp_v (InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3)));
-  a (func_s "let a : int = 4;") (stat_v (Assignment (LLet, ("a", Int), (IntLit 4))));
+  a (func_s "let a : int = 4;") (stat_v (Let (LLet, ("a", Int), (IntLit 4))));
+  a (func_s "const a : int = 4;") (stat_v (Let (LConst, ("a", Int), (IntLit 4))));
   a (func_s "if (3) { 4; }") (stat_v (If (IntLit 3, [Exp (IntLit 4)])));
   a (func_s "if (3) { 4; } else { 5; }") (stat_v (IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)])));
   a (func_s "hello();") (exp_v (Funcall ("hello", [])));
