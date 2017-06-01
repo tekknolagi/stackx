@@ -39,7 +39,7 @@ rule token = parse
   | '\''           { SQUOTE }
   | "||"           { OR }
   | "&&"           { AND }
-  | ":="           { SETEQ }
+  | "="            { SETEQ }
   | "<="           { LTE }
   | ">="           { GTE }
   | "=="           { EQ }
