@@ -1,12 +1,9 @@
-all: tests typechecker
+all: tests
 
-.PHONY: all tests typechecker
+.PHONY: all tests
 
-typechecker: tests typed_ast.cmo
-	ocamlc -o typechecker parser.cmo lexer.cmo ast.cmo typed_ast.cmo
-
-tests: ast.cmo lexer.cmo parser.cmo tests.cmo
-	ocamlc -o tests ast.cmo lexer.cmo parser.cmo tests.cmo
+tests: ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
+	ocamlc -o tests ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml

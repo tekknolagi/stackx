@@ -169,19 +169,3 @@ module Typed_AST = struct
     match p with
     | Prog defs -> ignore @@ List.fold_left check_def [] defs
 end
-
-let parse s = Parser.main Lexer.token @@ Lexing.from_string s
-
-let () =
-  let open Ast.Type in
-  let open Typed_AST in
-  let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env) in
-  let prog = parse
-  (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
-  (* "func main () : bool { return voidf(); }" *)
-  (* "func main () : int { if (5 < 3) { return 12; } }" *)
-  "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
-  in
-  let () = ignore @@ print_tyenv in
-  let passes = [constcheck; typecheck] in
-  List.iter (fun p -> p prog) passes

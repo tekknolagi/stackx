@@ -1,8 +1,15 @@
 open Ast.AST
 open Ast.Type
+open Typed_ast.Typed_AST
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
 let a str tree = let _ = assert ((parse str)=tree) in ()
+
+let chkpass str fs =
+  let ast = parse str in
+  List.iter (fun f -> f ast) fs
+
+let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ string_of_ty t ^ ")") env)
 
 let func_s s = "func a() : int { " ^ s ^ "}"
 let stat_v s = Prog [Fun ("a", [], Int, [s])]
@@ -29,8 +36,14 @@ let () =
   a "const a : int = 5; func b () : bool { 1; }"
     (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [Exp (IntLit 1)])]);
   a "const a : int = 5; func b () : bool { }"
-    (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [])])
+    (Prog [Const (("a", Int), (IntLit 5)); Fun ("b", [], Bool, [])]);
+  chkpass "func main () : void { let a : int = 5; a := 3; let b : int = 4; b := -2 * a; }"
+          [constcheck; typecheck];
   )
+
+  (* "const a : int = 5; func b (a : int) : bool { return thing(5,3); }" *)
+  (* "func main () : bool { return voidf(); }" *)
+  (* "func main () : int { if (5 < 3) { return 12; } }" *)
 
 let bigP s =
   Parser.main Lexer.token @@ Lexing.from_string s
