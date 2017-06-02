@@ -50,8 +50,8 @@ expr:
   | expr GTE expr           { Ast.AST.(InfixOper (Gte, $1, $3)) }
   | expr EQ expr            { Ast.AST.(InfixOper (Eq, $1, $3)) }
   | VAR EQUALS expr         { Ast.AST.(SetEq ($1, $3)) }
-  | expr LPAREN separated_list(COMMA, expr) RPAREN
-        { Ast.AST.Funcall ($1, $3) }
+  | VAR LPAREN separated_list(COMMA, expr) RPAREN
+        { Ast.AST.Funcall (Ast.AST.Var $1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
 ;
 primty:
