@@ -73,7 +73,7 @@ module Typed_AST = struct
           let tyO = ty @@ Var (string_of_op o) in
           tyApply tyO [ty e1; ty e2]
       | Funcall (f, actuals) ->
-          tyApply (ty @@ Var f) (List.map ty actuals)
+          tyApply (ty @@ f) (List.map ty actuals)
       (* Will exist; checked earlier in pipeline. *)
       | SetEq (n, e) ->
           (match (ty (Var n), ty e) with

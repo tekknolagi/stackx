@@ -29,12 +29,12 @@ let () =
   a (func_s "const a : int = 4;") (stat_v (Let (LConst, ("a", Int), (IntLit 4))));
   a (func_s "if (3) { 4; }") (stat_v (If (IntLit 3, [Exp (IntLit 4)])));
   a (func_s "if (3) { 4; } else { 5; }") (stat_v (IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)])));
-  a (func_s "hello();") (exp_v (Funcall ("hello", [])));
-  a (func_s "hello(1);") (exp_v (Funcall ("hello", [IntLit 1])));
-  a (func_s "hello(1, 2, 3);") (exp_v (Funcall ("hello", [IntLit 1; IntLit 2; IntLit 3])));
-  a (func_s "hello(a(1));") (exp_v (Funcall ("hello", [Funcall ("a", [IntLit 1])])));
+  a (func_s "hello();") (exp_v (Funcall (Var "hello", [])));
+  a (func_s "hello(1);") (exp_v (Funcall (Var "hello", [IntLit 1])));
+  a (func_s "hello(1, 2, 3);") (exp_v (Funcall (Var "hello", [IntLit 1; IntLit 2; IntLit 3])));
+  a (func_s "hello(a(1));") (exp_v (Funcall (Var "hello", [Funcall (Var "a", [IntLit 1])])));
   a (func_s "return 10;") (stat_v (Return (IntLit 10)));
-  a (func_s "return a(1);") (stat_v (Return (Funcall ("a", [IntLit 1]))));
+  a (func_s "return a(1);") (stat_v (Return (Funcall (Var "a", [IntLit 1]))));
   a (func_s "1 < 3;") (exp_v (InfixOper (Lt, IntLit 1, IntLit 3)));
   a (func_s "a + b;") (exp_v (InfixOper (Plus, Var "a", Var "b")));
   a (func_s "a = 2 + 3;") (stat_v (Exp (SetEq("a", (InfixOper (Plus, IntLit 2, IntLit 3))))));

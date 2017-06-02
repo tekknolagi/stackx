@@ -38,7 +38,7 @@ module AST = struct
     | Var of name
     | PrefixOper of op * exp
     | InfixOper of op * exp * exp
-    | Funcall of name * exp list
+    | Funcall of exp * exp list
     | SetEq of name * exp
   let rec string_of_exp = function
     | IntLit i -> string_of_int i
@@ -51,7 +51,7 @@ module AST = struct
         ^ string_of_op o ^
         "(" ^ string_of_exp e2 ^ "))"
     | Funcall (n, es) ->
-        n ^ "("
+        string_of_exp n ^ "("
         ^ (String.concat "," @@ List.map string_of_exp es) ^ ")"
     | SetEq (n, e) -> n ^ " = " ^ string_of_exp e
 
