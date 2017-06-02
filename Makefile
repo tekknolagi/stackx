@@ -2,9 +2,9 @@ all: tests
 
 .PHONY: all tests
 
-tests: env.cmo ast.cmo lexer.cmo parser.cmo parser_message.cmo typed_ast.cmo tests.cmo
+tests: env.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o tests \
-			         env.cmo ast.cmo lexer.cmo parser.cmo parser_message.cmo \
+			         env.cmo ast.cmo lexer.cmo parser.cmo \
 					 typed_ast.cmo tests.cmo
 
 lexer.cmo: lexer.ml parser.cmi
