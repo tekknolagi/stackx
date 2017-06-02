@@ -24,19 +24,11 @@ module Typed_AST = struct
     | Lte -> "<=" | Gte -> ">=" | Eq -> "=="
     | And -> "&&" | Or -> "||"
 
-  type ty = Prim of Ast.Type.t | Arrow of ty list
-  let rec string_of_ty ty =
-    let s ts = String.concat " -> " @@ List.map string_of_ty ts in
-    match ty with
-    | Prim t -> Ast.Type.to_string t
-    | Arrow [x] -> s [Prim Ast.Type.Void; x]
-    | Arrow ts -> s ts
+  type exp = Ast.Type.t * Ast.AST.exp
+  let string_of_exp (t, e) = Ast.AST.string_of_exp e ^ " : " ^ Ast.Type.to_string t
 
-  type exp = ty * Ast.AST.exp
-  let string_of_exp (t, e) = Ast.AST.string_of_exp e ^ " : " ^ string_of_ty t
-
-  type statement = ty * Ast.AST.statement
-  type toplevel_def = ty * Ast.AST.toplevel_def
+  type statement = Ast.Type.t * Ast.AST.statement
+  type toplevel_def = Ast.Type.t * Ast.AST.toplevel_def
   type program = toplevel_def list
   type t = program
 
@@ -45,8 +37,9 @@ module Typed_AST = struct
   exception UnboundVariable of string
   exception Unhandled
 
-  type tyenv = string * ty list
+  type tyenv = string * Ast.Type.t list
   let typecheck p =
+    let open Ast.Type in
     let open Ast.AST in
     let type_of tyenv e =
       let rec tyApply formals actuals =
@@ -56,16 +49,23 @@ module Typed_AST = struct
             tyApply (Arrow restFormals) restActuals
         | (Arrow (f::_), a::_) ->
             raise @@ TypeMismatch ("mismatch in function call. expected "
-                                   ^ string_of_ty f ^ " but got "
-                                   ^ string_of_ty a)
+                                   ^ to_string f ^ " but got "
+                                   ^ to_string a)
         | (Arrow [t], []) -> t
         | (Arrow _, ls) -> raise @@ TypeMismatch "too few arguments"
         | (Prim _, _) -> raise @@ TypeMismatch "non-function variable called as function"
+        | (Pointer _, _) -> raise @@ TypeMismatch "non-function variable called as function"
+        (* | (Pointer (Arrow formals), actuals) -> tyapply  *)
       in
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
       | CharLit _ -> Prim Ast.Type.Char
       | Var n -> Env.assoc n tyenv
+      | Ref e -> Pointer (ty e)
+      | Deref e ->
+          (match ty e with
+          | Pointer t -> t
+          | _ -> raise @@ TypeMismatch "cannot deref non-pointer")
       | PrefixOper (o, e) ->
           let tyO = ty @@ Var ("u" ^ string_of_op o) in
           tyApply tyO [ty e]
@@ -87,17 +87,17 @@ module Typed_AST = struct
          (match type_of tyenv e with
          | t' when t'=t -> tyenv
          | t' -> raise @@ TypeMismatch ("returned value's type must match fn "
-                                        ^ "type. found " ^ string_of_ty t'
-                                        ^ " but expected " ^ string_of_ty t)
+                                        ^ "type. found " ^ to_string t'
+                                        ^ " but expected " ^ to_string t)
          )
       | Let (_, (n, t), e) when Env.exists_curframe n tyenv -> raise @@ Redefinition n
       | Let (_, (n, t), e) ->
           (match type_of tyenv e with
-          | tyE when tyE=(Prim t) -> Env.bind n (Prim t) tyenv
+          | tyE when tyE=t -> Env.bind n t tyenv
           | tyE ->
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
-                                     ^ string_of_ty tyE ^ " but expected "
-                                     ^ Ast.Type.to_string t))
+                                     ^ to_string tyE ^ " but expected "
+                                     ^ to_string t))
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
@@ -114,11 +114,11 @@ module Typed_AST = struct
     let check_def tyenv = function
       | Const ((n, t), e) ->
           if Env.exists n tyenv then raise @@ Redefinition n
-          else Env.bind n (Prim t) tyenv
+          else Env.bind n t tyenv
       | Fun (n, formals, t, body) ->
-          let newenv = (List.map (fun (n, t) -> (n, Prim t)) formals)::tyenv in
-          let () = check_fun (Prim t) body newenv in
-          Env.bind n (Arrow ((List.map (fun (n,t) -> Prim t) formals) @ [Prim t])) tyenv
+          let newenv = (List.map (fun (n, t) -> (n, t)) formals)::tyenv in
+          let () = check_fun t body newenv in
+          Env.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
     in
     let basis = Ast.Type.([[
       "true", Prim Bool;

@@ -1,12 +1,21 @@
 module Type = struct
-  type t = Void | Int | String | Bool | Char
+  type prim = Void | Int | String | Bool | Char
 
-  let to_string = function
+  let rec prim_to_string = function
     | Void -> "void"
     | Int -> "int"
     | String -> "string"
     | Bool -> "bool"
     | Char -> "char"
+
+  type t = Prim of prim | Arrow of t list | Pointer of t
+  let rec to_string ty =
+    let s ts = String.concat " -> " @@ List.map to_string ts in
+    match ty with
+    | Prim t -> prim_to_string t
+    | Arrow [x] -> s [Prim Void; x]
+    | Arrow ts -> s ts
+    | Pointer t -> to_string t ^ "*"
 end
 
 module AST = struct
@@ -36,6 +45,8 @@ module AST = struct
     | IntLit of int
     | CharLit of char
     | Var of name
+    | Ref of exp
+    | Deref of exp
     | PrefixOper of op * exp
     | InfixOper of op * exp * exp
     | Funcall of exp * exp list
@@ -44,6 +55,8 @@ module AST = struct
     | IntLit i -> string_of_int i
     | CharLit c -> "'" ^ String.make 1 c ^ "'"
     | Var n -> n
+    | Ref e -> "(&(" ^ string_of_exp e ^ "))"
+    | Deref e -> "(*(" ^ string_of_exp e ^ "))"
     | PrefixOper (o, e) ->
         "(" ^ string_of_op o ^ "(" ^ string_of_exp e ^ "))"
     | InfixOper (o, e1, e2) ->

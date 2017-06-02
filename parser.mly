@@ -2,7 +2,8 @@
 %token <int> INT
 %token <char> CHAR
 %token <string> VAR
-%token PLUS MINUS TIMES DIV
+%token AMP
+%token PLUS MINUS STAR DIV
 %token LT LTE GT GTE EQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
@@ -20,8 +21,9 @@
 %right EQ
 %right LT LTE GT GTE
 %left PLUS MINUS        /* lowest precedence */
-%left TIMES DIV         /* medium precedence */
+%left STAR DIV         /* medium precedence */
 %nonassoc UMINUS        /* highest precedence */
+%nonassoc AMP
 
 %start main             /* the entry point */
 %type <Ast.AST.t> main
@@ -34,9 +36,11 @@ expr:
   | CHAR                    { Ast.AST.CharLit $1 }
   | VAR                     { Ast.AST.Var $1 }
   | LPAREN expr RPAREN      { $2 }
+  | AMP expr                { Ast.AST.Ref $2 }
+  | STAR expr               { Ast.AST.Deref $2 }
   | expr AND expr           { Ast.AST.(InfixOper (And, $1, $3)) }
   | expr OR expr            { Ast.AST.(InfixOper (Or, $1, $3)) }
-  | expr TIMES expr         { Ast.AST.(InfixOper (Times, $1, $3)) }
+  | expr STAR expr          { Ast.AST.(InfixOper (Times, $1, $3)) }
   | expr DIV expr           { Ast.AST.(InfixOper (Div, $1, $3)) }
   | expr PLUS expr          { Ast.AST.(InfixOper (Plus, $1, $3)) }
   | expr MINUS expr         { Ast.AST.(InfixOper (Minus, $1, $3)) }
@@ -50,15 +54,19 @@ expr:
         { Ast.AST.Funcall ($1, $3) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
 ;
-type_:
-    TVoid       { Ast.Type.Void }
-  | TInt        { Ast.Type.Int }
-  | TString     { Ast.Type.String }
-  | TBool       { Ast.Type.Bool }
-  | TChar       { Ast.Type.Char }
+primty:
+    TVoid       { Ast.Type.(Prim Void) }
+  | TInt        { Ast.Type.(Prim Int) }
+  | TString     { Ast.Type.(Prim String) }
+  | TBool       { Ast.Type.(Prim Bool) }
+  | TChar       { Ast.Type.(Prim Char) }
+;
+ty:
+  | primty      { $1 }
+  | ty STAR     { Ast.Type.Pointer $1 }
 ;
 vardecl:
-    VAR COLON type_ { $1, $3 }
+    VAR COLON ty { $1, $3 }
 ;
 stmt:
   expr SEMICOLON
@@ -78,7 +86,7 @@ block:
   LCURLY list(stmt) RCURLY { $2 }
 ;
 program_item:
-    KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON type_ block
+    KFunc VAR LPAREN separated_list(COMMA, vardecl) RPAREN COLON ty block
       { Ast.AST.Fun ($2, $4, $7, $8) }
   | KConst vardecl EQUALS expr SEMICOLON
       { Ast.AST.Const ($2, $4) }

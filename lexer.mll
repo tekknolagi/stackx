@@ -24,7 +24,8 @@ rule token = parse
   | ['0'-'9']+ as lxm { INT(int_of_string lxm) }
   | '+'            { PLUS }
   | '-'            { MINUS }
-  | '*'            { TIMES }
+  | '&'            { AMP }
+  | '*'            { STAR }
   | '/'            { DIV }
   | '('            { LPAREN }
   | ')'            { RPAREN }
