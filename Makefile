@@ -18,7 +18,7 @@ lexer.ml: lexer.mll
 
 parser.ml parser.mli: parser.mly
 	# --table used for incremental mode
-	menhir --table parser.mly
+	menhir parser.mly
 	# menhir --explain parser.mly --compile-errors parser.messages > parser_message.ml
 
 parser.cmi: parser.mli
