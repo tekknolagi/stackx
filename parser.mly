@@ -51,7 +51,9 @@ expr:
   | expr EQ expr            { Ast.AST.(InfixOper (Eq, $1, $3)) }
   | VAR EQUALS expr         { Ast.AST.(SetEq ($1, $3)) }
   | VAR LPAREN separated_list(COMMA, expr) RPAREN
-        { Ast.AST.Funcall (Ast.AST.Var $1, $3) }
+        { Ast.AST.(Funcall (Var $1, $3)) }
+  | LPAREN expr RPAREN LPAREN separated_list(COMMA, expr) RPAREN
+        { Ast.AST.Funcall ($2, $5) }
   | MINUS expr %prec UMINUS { Ast.AST.(PrefixOper (Minus, $2)) }
 ;
 primty:
