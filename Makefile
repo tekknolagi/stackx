@@ -28,7 +28,8 @@ parser.ml parser.mli: parser.mly
 	ocamlc -c $<
 
 clean:
-	-rm ast.cmi ast.cmo typed_ast.cmi typed_ast.cmo
-	-rm lexer.cmi lexer.cmo lexer.ml
-	-rm parser.cmi parser.cmo parser.ml parser.mli
-	-rm tests tests.cmi tests.cmo
+	-rm -f env.cmi env.cmo
+	-rm -f ast.cmi ast.cmo typed_ast.cmi typed_ast.cmo
+	-rm -f lexer.cmi lexer.cmo lexer.ml
+	-rm -f parser.cmi parser.cmo parser.ml parser.mli
+	-rm -f tests tests.cmi tests.cmo
