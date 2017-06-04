@@ -1,0 +1,6 @@
+#load "lexer.cmo";;
+#load "parser.cmo";;
+#load "varenv.cmo";;
+#load "ast.cmo";;
+#load "typed_ast.cmo";;
+#load "tests.cmo";;
