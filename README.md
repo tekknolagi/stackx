@@ -24,7 +24,8 @@ See [tests.ml](tests.ml) to see what the binary does.
 
    1. `#load "lexer.cmo";;`
    2. `#load "parser.cmo";;`
-   3. `#load "tests.cmo";;`
-   4. `Tests.parse "func a () : int { 1; }";;`
-
-   ...you get the idea.
+   3. `#load "env.cmo";;`
+   4. `#load "ast.cmo";;`
+   5. `#load "typed_ast.cmo";;`
+   6. `#load "tests.cmo";;`
+   7. `Tests.parse "func a () : int { 1; }";;`
