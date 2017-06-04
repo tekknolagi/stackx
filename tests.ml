@@ -22,7 +22,6 @@ let func_s s = "func a() : int { " ^ s ^ "}"
 let stat_v s = Prog [Fun ("a", [], Prim Int, [s])]
 let exp_v e = stat_v (Exp e)
 
-(*
 let () =
   (
   a (func_s "1 + 2 - 3;") (exp_v (InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3)));
@@ -73,4 +72,3 @@ let () =
   chkfail (func_s "let a : int * = 3;") typecheck;
   chkpass (func_s "let a : int * = &3;") [typecheck];
   )
-  *)
