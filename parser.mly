@@ -127,8 +127,8 @@ type_expression:
 
 type_identifier:
   | TVoid     { Ast.Type.(Prim Void) }
-  | TInt      { Ast.Type.(Prim Void) }
-  | TString   { Ast.Type.(Prim Void) }
-  | TBool     { Ast.Type.(Prim Void) }
-  | TChar     { Ast.Type.(Prim Void) }
+  | TInt      { Ast.Type.(Prim Int) }
+  | TString   { Ast.Type.(Prim String) }
+  | TBool     { Ast.Type.(Prim Bool) }
+  | TChar     { Ast.Type.(Prim Char) }
 ;
