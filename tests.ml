@@ -48,6 +48,7 @@ let () =
   a (func_s "let a : int * = 3;")
     (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3))));
   a (func_s "let a : int * = &3;") (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)))));
+  a (func_s "3();") (exp_v (Funcall (IntLit 3, [])));
   chkpass "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }"
           [constcheck; typecheck];
   chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
