@@ -52,10 +52,9 @@ statement:
 ;
 
 if_statement:
-  | KIf expression block                            { Ast.AST.If ($2, $3) }
-  | KIf LPAREN expression RPAREN block              { Ast.AST.If ($3, $5) }
-  | KIf expression block KElse block                { Ast.AST.IfElse ($2, $3, $5) }
-  | KIf LPAREN expression RPAREN block KElse block  { Ast.AST.IfElse ($3, $5, $7) }
+  | KIf LPAREN expression RPAREN block                      { Ast.AST.If ($3, $5) }
+  | KIf LPAREN expression RPAREN block KElse block          { Ast.AST.IfElse ($3, $5, $7) }
+  | KIf LPAREN expression RPAREN block KElse if_statement   { Ast.AST.IfElse ($3, $5, [$7]) }
 ;
 
 expression:
