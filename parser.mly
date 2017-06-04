@@ -101,8 +101,8 @@ mult_div_expression:
 unary_expression:
   | PLUS unary_expression    { Ast.AST.(PrefixOper (Plus, $2)) }
   | MINUS unary_expression   { Ast.AST.(PrefixOper (Minus, $2)) }
-  | STAR unary_expression    { Ast.AST.Ref $2 }
-  | AMP unary_expression     { Ast.AST.Deref $2 }
+  | STAR unary_expression    { Ast.AST.Deref $2 }
+  | AMP unary_expression     { Ast.AST.Ref $2 }
   | call_expression         { $1 }
 ;
 
