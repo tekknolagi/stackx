@@ -51,7 +51,7 @@ let statements = [
 ]
 
 let programs = [
-  "const a : int = 5; func b ( : bool { 1; }",
+  "const a : int = 5; func b () : bool { 1; }",
     Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [Exp (IntLit 1)])];
   "const a : int = 5; func b () : bool { }",
     Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [])];
