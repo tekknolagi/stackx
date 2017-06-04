@@ -63,52 +63,52 @@ assignment_expression:
 ;
 
 logical_or_expression:
-  | logical_and_expression OR logical_and_expression  { Ast.AST.(InfixOper (Or, $1, $3)) }
+  | logical_and_expression OR logical_or_expression   { Ast.AST.(InfixOper (Or, $1, $3)) }
   | logical_and_expression                            { $1 }
 ;
 
 logical_and_expression:
-  | equal_not_expression AND equal_not_expression   { Ast.AST.(InfixOper (And, $1, $3)) }
-  | equal_not_expression                            { $1 }
+  | equal_not_expression AND logical_and_expression   { Ast.AST.(InfixOper (And, $1, $3)) }
+  | equal_not_expression                              { $1 }
 ;
 
 equal_not_expression:
-  | less_equal_expression EQ less_equal_expression  { Ast.AST.(InfixOper (Eq, $1, $3)) }
+  | less_equal_expression EQ equal_not_expression   { Ast.AST.(InfixOper (Eq, $1, $3)) }
   | less_equal_expression                           { $1 }
   (* TODO: Add the missing != operator here *)
 ;
 
 less_equal_expression:
-  | add_sub_expression LT add_sub_expression    { Ast.AST.(InfixOper (Lt, $1, $3)) }
-  | add_sub_expression GT add_sub_expression    { Ast.AST.(InfixOper (Gt, $1, $3)) }
-  | add_sub_expression LTE add_sub_expression   { Ast.AST.(InfixOper (Lte, $1, $3)) }
-  | add_sub_expression GTE add_sub_expression   { Ast.AST.(InfixOper (Gte, $1, $3)) }
-  | add_sub_expression                          { $1 }
+  | add_sub_expression LT less_equal_expression   { Ast.AST.(InfixOper (Lt, $1, $3)) }
+  | add_sub_expression GT less_equal_expression   { Ast.AST.(InfixOper (Gt, $1, $3)) }
+  | add_sub_expression LTE less_equal_expression  { Ast.AST.(InfixOper (Lte, $1, $3)) }
+  | add_sub_expression GTE less_equal_expression  { Ast.AST.(InfixOper (Gte, $1, $3)) }
+  | add_sub_expression                            { $1 }
 ;
 
 add_sub_expression:
-  | mult_div_expression PLUS mult_div_expression    { Ast.AST.(InfixOper (Plus, $1, $3)) }
-  | mult_div_expression MINUS mult_div_expression   { Ast.AST.(InfixOper (Minus, $1, $3)) }
-  | mult_div_expression                             { $1 }
+  | mult_div_expression PLUS add_sub_expression   { Ast.AST.(InfixOper (Plus, $1, $3)) }
+  | mult_div_expression MINUS add_sub_expression  { Ast.AST.(InfixOper (Minus, $1, $3)) }
+  | mult_div_expression                           { $1 }
 ;
 
 mult_div_expression:
-  | unary_expression STAR unary_expression  { Ast.AST.(InfixOper (Times, $1, $3)) }
-  | unary_expression DIV unary_expression   { Ast.AST.(InfixOper (Div, $1, $3)) }
-  | unary_expression                        { $1 }
+  | unary_expression STAR mult_div_expression   { Ast.AST.(InfixOper (Times, $1, $3)) }
+  | unary_expression DIV mult_div_expression    { Ast.AST.(InfixOper (Div, $1, $3)) }
+  | unary_expression                            { $1 }
 ;
 
 unary_expression:
-  | PLUS call_expression    { Ast.AST.(PrefixOper (Plus, $2)) }
-  | MINUS call_expression   { Ast.AST.(PrefixOper (Minus, $2)) }
-  | STAR call_expression    { Ast.AST.Ref $2 }
-  | AMP call_expression     { Ast.AST.Deref $2 }
+  | PLUS unary_expression    { Ast.AST.(PrefixOper (Plus, $2)) }
+  | MINUS unary_expression   { Ast.AST.(PrefixOper (Minus, $2)) }
+  | STAR unary_expression    { Ast.AST.Ref $2 }
+  | AMP unary_expression     { Ast.AST.Deref $2 }
   | call_expression         { $1 }
 ;
 
 call_expression:
-  | literal LPAREN separated_list(COMMA, expression) RPAREN { Ast.AST.Funcall ($1, $3) }
-  | literal                                                 { $1 }
+  | call_expression LPAREN separated_list(COMMA, expression) RPAREN { Ast.AST.Funcall ($1, $3) }
+  | literal                                                         { $1 }
 ;
 
 literal:
