@@ -63,38 +63,38 @@ assignment_expression:
 ;
 
 logical_or_expression:
-  | logical_and_expression OR logical_or_expression   { Ast.AST.(InfixOper (Or, $1, $3)) }
+  | logical_or_expression OR logical_and_expression   { Ast.AST.(InfixOper (Or, $1, $3)) }
   | logical_and_expression                            { $1 }
 ;
 
 logical_and_expression:
-  | equal_not_expression AND logical_and_expression   { Ast.AST.(InfixOper (And, $1, $3)) }
+  | logical_and_expression AND equal_not_expression   { Ast.AST.(InfixOper (And, $1, $3)) }
   | equal_not_expression                              { $1 }
 ;
 
 equal_not_expression:
-  | less_equal_expression EQ equal_not_expression   { Ast.AST.(InfixOper (Eq, $1, $3)) }
+  | equal_not_expression EQ less_equal_expression   { Ast.AST.(InfixOper (Eq, $1, $3)) }
   | less_equal_expression                           { $1 }
   (* TODO: Add the missing != operator here *)
 ;
 
 less_equal_expression:
-  | add_sub_expression LT less_equal_expression   { Ast.AST.(InfixOper (Lt, $1, $3)) }
-  | add_sub_expression GT less_equal_expression   { Ast.AST.(InfixOper (Gt, $1, $3)) }
-  | add_sub_expression LTE less_equal_expression  { Ast.AST.(InfixOper (Lte, $1, $3)) }
-  | add_sub_expression GTE less_equal_expression  { Ast.AST.(InfixOper (Gte, $1, $3)) }
+  | less_equal_expression LT add_sub_expression   { Ast.AST.(InfixOper (Lt, $1, $3)) }
+  | less_equal_expression GT add_sub_expression   { Ast.AST.(InfixOper (Gt, $1, $3)) }
+  | less_equal_expression LTE add_sub_expression  { Ast.AST.(InfixOper (Lte, $1, $3)) }
+  | less_equal_expression GTE add_sub_expression  { Ast.AST.(InfixOper (Gte, $1, $3)) }
   | add_sub_expression                            { $1 }
 ;
 
 add_sub_expression:
-  | mult_div_expression PLUS add_sub_expression   { Ast.AST.(InfixOper (Plus, $1, $3)) }
-  | mult_div_expression MINUS add_sub_expression  { Ast.AST.(InfixOper (Minus, $1, $3)) }
+  | add_sub_expression PLUS mult_div_expression   { Ast.AST.(InfixOper (Plus, $1, $3)) }
+  | add_sub_expression MINUS mult_div_expression  { Ast.AST.(InfixOper (Minus, $1, $3)) }
   | mult_div_expression                           { $1 }
 ;
 
 mult_div_expression:
-  | unary_expression STAR mult_div_expression   { Ast.AST.(InfixOper (Times, $1, $3)) }
-  | unary_expression DIV mult_div_expression    { Ast.AST.(InfixOper (Div, $1, $3)) }
+  | mult_div_expression STAR unary_expression   { Ast.AST.(InfixOper (Times, $1, $3)) }
+  | mult_div_expression DIV unary_expression    { Ast.AST.(InfixOper (Div, $1, $3)) }
   | unary_expression                            { $1 }
 ;
 
