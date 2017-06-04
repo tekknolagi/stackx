@@ -3,7 +3,7 @@ open Ast.Type
 open Typed_ast.Typed_AST
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
-let a str tree = let _ = assert ((parse str)=tree) in ()
+let a str tree = let _ = assert ((parse str)=tree) in print_endline "test passed"
 
 let chkpass str fs =
   let ast = parse str in
