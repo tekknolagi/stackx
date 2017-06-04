@@ -22,25 +22,29 @@ let func_s s = "func a() : int { " ^ s ^ "}"
 let stat_v s = Prog [Fun ("a", [], Prim Int, [s])]
 let exp_v e = stat_v (Exp e)
 
-let () =
-  (
-  a (func_s "1 + 2 - 3;") (exp_v (InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3)));
+let expressions = [
+  "1 + 2 - 3"       , InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3);
+   "hello()"        , Funcall (Var "hello", []);
+   "hello(1)"       , Funcall (Var "hello", [IntLit 1]);
+   "hello(1, 2, 3)" , Funcall (Var "hello", [IntLit 1; IntLit 2; IntLit 3]);
+   "hello(a(1))"    , Funcall (Var "hello", [Funcall (Var "a", [IntLit 1])]);
+   "1 < 3"          , InfixOper (Lt, IntLit 1, IntLit 3);
+   "a + b"          , InfixOper (Plus, Var "a", Var "b");
+   "'c'"            , CharLit 'c';
+   "3()"            , Funcall (IntLit 3, []);
+]
+
+let () = (
+  List.iter (fun (s, e) -> a (func_s @@ s ^ ";") (exp_v e)) expressions;
   a (func_s "let a : int = 4;") (stat_v (Let (LLet, ("a", Prim Int), (IntLit 4))));
   a (func_s "const a : int = 4;") (stat_v (Let (LConst, ("a", Prim Int), (IntLit 4))));
   a (func_s "if (3) { 4; }") (stat_v (If (IntLit 3, [Exp (IntLit 4)])));
   a (func_s "if (3) { 4; } else { 5; }") (stat_v (IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)])));
-  a (func_s "hello();") (exp_v (Funcall (Var "hello", [])));
-  a (func_s "hello(1);") (exp_v (Funcall (Var "hello", [IntLit 1])));
-  a (func_s "hello(1, 2, 3);") (exp_v (Funcall (Var "hello", [IntLit 1; IntLit 2; IntLit 3])));
-  a (func_s "hello(a(1));") (exp_v (Funcall (Var "hello", [Funcall (Var "a", [IntLit 1])])));
   a (func_s "return 10;") (stat_v (Return (IntLit 10)));
   a (func_s "return a(1);") (stat_v (Return (Funcall (Var "a", [IntLit 1]))));
-  a (func_s "1 < 3;") (exp_v (InfixOper (Lt, IntLit 1, IntLit 3)));
-  a (func_s "a + b;") (exp_v (InfixOper (Plus, Var "a", Var "b")));
   a (func_s "a = 2 + 3;") (stat_v (Exp (SetEq ("a", (InfixOper (Plus, IntLit 2, IntLit 3))))));
   a (func_s "a && 1 + 2 >3;")
     (exp_v (InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)))));
-  a (func_s "'c';") (exp_v (CharLit 'c'));
   a "const a : int = 5; func b () : bool { 1; }"
     (Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [Exp (IntLit 1)])]);
   a "const a : int = 5; func b () : bool { }"
@@ -48,7 +52,6 @@ let () =
   a (func_s "let a : int * = 3;")
     (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3))));
   a (func_s "let a : int * = &3;") (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)))));
-  a (func_s "3();") (exp_v (Funcall (IntLit 3, [])));
   chkpass "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }"
           [constcheck; typecheck];
   chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
