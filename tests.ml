@@ -57,32 +57,29 @@ let programs = [
     Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [])];
 ]
 
+let check_pass = [
+  "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }", [constcheck; typecheck];
+  "const a : int = 5; func b (a : int) : bool { return thing(5,3); }", [constcheck; typecheck];
+  "func main () : bool { return voidf(); }", [constcheck; typecheck];
+  "func main () : int { if (5 < 3) { return 12; } }", [constcheck; typecheck];
+  "func main () : char { return 'h'; }", [typecheck];
+  (func_s "let a : int * = &3;"), [typecheck];
+]
+
+let check_fail = [
+  "func main () : int { if (5 < 3) { return true; } }", typecheck;
+  "func main () : int { const a : int = 4; a = 3; }", constcheck;
+  "func main () : int { a = 3; }", constcheck;
+  "func main () : int { let a : int = 4; let a : int = 3; }", typecheck;
+  "func f () : int { return 3; } func main () : int { f(3); }", typecheck;
+  "func f (a : int) : int { return 3; } func main () : int { f(); }", typecheck;
+  (func_s "let a : int * = 3;"), typecheck;
+]
+
 let () = (
   List.iter (fun (s, e) -> a (func_s @@ s ^ ";") (exp_v e)) expressions;
   List.iter (fun (s, st) -> a (func_s s) (stat_v st)) statements;
   List.iter (fun (s, p) -> a s p) programs;
-  chkpass "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }"
-          [constcheck; typecheck];
-  chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
-          [constcheck; typecheck];
-  chkpass "func main () : bool { return voidf(); }"
-          [constcheck; typecheck];
-  chkpass "func main () : int { if (5 < 3) { return 12; } }"
-          [constcheck; typecheck];
-  chkpass "func main () : char { return 'h'; }"
-          [typecheck];
-  chkfail "func main () : int { if (5 < 3) { return true; } }"
-          typecheck;
-  chkfail "func main () : int { const a : int = 4; a = 3; }"
-          constcheck;
-  chkfail "func main () : int { a = 3; }"
-          constcheck;
-  chkfail "func main () : int { let a : int = 4; let a : int = 3; }"
-          typecheck;
-  chkfail "func f () : int { return 3; } func main () : int { f(3); }"
-          typecheck;
-  chkfail "func f (a : int) : int { return 3; } func main () : int { f(); }"
-          typecheck;
-  chkfail (func_s "let a : int * = 3;") typecheck;
-  chkpass (func_s "let a : int * = &3;") [typecheck];
-  )
+  List.iter (fun (s, tests) -> chkpass s tests) check_pass;
+  List.iter (fun (s, test) -> chkfail s test) check_fail;
+)
