@@ -3,7 +3,10 @@ open Ast.Type
 open Typed_ast.Typed_AST
 
 let parse s = Parser.main Lexer.token @@ Lexing.from_string s
-let a str tree = let _ = assert ((parse str)=tree) in print_endline "test passed"
+let a str tree =
+  try
+    let _ = assert ((parse str)=tree) in print_endline "test passed"
+  with | Parser.Error -> prerr_endline @@ "PARSE ERROR IN:\n    " ^ str
 
 let chkpass str fs =
   let ast = parse str in
@@ -32,26 +35,32 @@ let expressions = [
    "a + b"          , InfixOper (Plus, Var "a", Var "b");
    "'c'"            , CharLit 'c';
    "3()"            , Funcall (IntLit 3, []);
+  "a && 1 + 2 >3"  , InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)));
+]
+
+let statements = [
+  "let a : int = 4;"         , Let (LLet, ("a", Prim Int), (IntLit 4));
+  "const a : int = 4;"       , Let (LConst, ("a", Prim Int), (IntLit 4));
+  "if (3) { 4; }"            , If (IntLit 3, [Exp (IntLit 4)]);
+  "if (3) { 4; } else { 5; }", IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)]);
+  "return 10;"               , Return (IntLit 10);
+  "return a(1);"             , Return (Funcall (Var "a", [IntLit 1]));
+  "a = 2 + 3;"               , Exp (SetEq ("a", (InfixOper (Plus, IntLit 2, IntLit 3))));
+  "let a : int * = &3;"      , Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)));
+  "let a : int * = 3;"       , Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3));
+]
+
+let programs = [
+  "const a : int = 5; func b ( : bool { 1; }",
+    Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [Exp (IntLit 1)])];
+  "const a : int = 5; func b () : bool { }",
+    Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [])];
 ]
 
 let () = (
   List.iter (fun (s, e) -> a (func_s @@ s ^ ";") (exp_v e)) expressions;
-  a (func_s "let a : int = 4;") (stat_v (Let (LLet, ("a", Prim Int), (IntLit 4))));
-  a (func_s "const a : int = 4;") (stat_v (Let (LConst, ("a", Prim Int), (IntLit 4))));
-  a (func_s "if (3) { 4; }") (stat_v (If (IntLit 3, [Exp (IntLit 4)])));
-  a (func_s "if (3) { 4; } else { 5; }") (stat_v (IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)])));
-  a (func_s "return 10;") (stat_v (Return (IntLit 10)));
-  a (func_s "return a(1);") (stat_v (Return (Funcall (Var "a", [IntLit 1]))));
-  a (func_s "a = 2 + 3;") (stat_v (Exp (SetEq ("a", (InfixOper (Plus, IntLit 2, IntLit 3))))));
-  a (func_s "a && 1 + 2 >3;")
-    (exp_v (InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)))));
-  a "const a : int = 5; func b () : bool { 1; }"
-    (Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [Exp (IntLit 1)])]);
-  a "const a : int = 5; func b () : bool { }"
-    (Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [])]);
-  a (func_s "let a : int * = 3;")
-    (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3))));
-  a (func_s "let a : int * = &3;") (stat_v (Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)))));
+  List.iter (fun (s, st) -> a (func_s s) (stat_v st)) statements;
+  List.iter (fun (s, p) -> a s p) programs;
   chkpass "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }"
           [constcheck; typecheck];
   chkpass "const a : int = 5; func b (a : int) : bool { return thing(5,3); }"
