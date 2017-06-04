@@ -60,7 +60,7 @@ module Typed_AST = struct
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
       | CharLit _ -> Prim Ast.Type.Char
-      | Var n -> Env.assoc n tyenv
+      | Var n -> Varenv.assoc n tyenv
       | Ref e -> Pointer (ty e)
       | Deref e ->
           (match ty e with
@@ -90,10 +90,10 @@ module Typed_AST = struct
                                         ^ "type. found " ^ to_string t'
                                         ^ " but expected " ^ to_string t)
          )
-      | Let (_, (n, t), e) when Env.exists_curframe n tyenv -> raise @@ Redefinition n
+      | Let (_, (n, t), e) when Varenv.exists_curframe n tyenv -> raise @@ Redefinition n
       | Let (_, (n, t), e) ->
           (match type_of tyenv e with
-          | tyE when tyE=t -> Env.bind n t tyenv
+          | tyE when tyE=t -> Varenv.bind n t tyenv
           | tyE ->
               raise @@ TypeMismatch ("variable assignment type mismatch. found "
                                      ^ to_string tyE ^ " but expected "
@@ -113,12 +113,12 @@ module Typed_AST = struct
     in
     let check_def tyenv = function
       | Const ((n, t), e) ->
-          if Env.exists n tyenv then raise @@ Redefinition n
-          else Env.bind n t tyenv
+          if Varenv.exists n tyenv then raise @@ Redefinition n
+          else Varenv.bind n t tyenv
       | Fun (n, formals, t, body) ->
           let newenv = (List.map (fun (n, t) -> (n, t)) formals)::tyenv in
           let () = check_fun t body newenv in
-          Env.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
+          Varenv.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
     in
     let basis = Ast.Type.([[
       "true", Prim Bool;
@@ -147,26 +147,26 @@ module Typed_AST = struct
   let constcheck p =
     let open Ast.AST in
     let rec check_statement env = function
-      | Let (LConst, (n, _), _) -> Env.bind n `Const env
-      | Let (LLet, (n, _), _) -> Env.bind n `Mut env
+      | Let (LConst, (n, _), _) -> Varenv.bind n `Const env
+      | Let (LLet, (n, _), _) -> Varenv.bind n `Mut env
       | IfElse (cond, iftrue, iffalse) ->
           (ignore @@ List.fold_left check_statement env iftrue;
            ignore @@ List.fold_left check_statement env iftrue;
            env)
       | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
-      | Exp (SetEq (n, _)) when Env.unbound n env -> raise @@ UnboundVariable n
-      | Exp (SetEq (n, _)) when `Const=Env.assoc n env -> raise @@ SettingConst n
-      | Exp (SetEq (n, _)) when `Mut=Env.assoc n env -> env
+      | Exp (SetEq (n, _)) when Varenv.unbound n env -> raise @@ UnboundVariable n
+      | Exp (SetEq (n, _)) when `Const=Varenv.assoc n env -> raise @@ SettingConst n
+      | Exp (SetEq (n, _)) when `Mut=Varenv.assoc n env -> env
       | Exp (SetEq (_, e)) -> check_statement env (Exp e)
       | _ -> env
     in
     let check_fun body env = List.fold_left check_statement env body in
     let check_def env = function
-      | Const ((n, _), _) -> Env.bind n `Const env
+      | Const ((n, _), _) -> Varenv.bind n `Const env
       | Fun (n, _, _, body) ->
           let () = ignore @@ check_fun body env in
-          Env.bind n `Const env
+          Varenv.bind n `Const env
     in
     match p with
-    | Prog defs -> ignore @@ List.fold_left check_def Env.empty defs
+    | Prog defs -> ignore @@ List.fold_left check_def Varenv.empty defs
 end
