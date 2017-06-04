@@ -21,12 +21,6 @@ parser.ml parser.mli: parser.mly
 	menhir parser.mly
 	# menhir --explain parser.mly --compile-errors parser.messages > parser_message.ml
 
-parser.cmi: parser.mli
-	ocamlfind ocamlc -package menhirLib -c parser.mli
-
-parser.cmo: parser.ml parser.cmi
-	ocamlfind ocamlc -package menhirLib -c parser.ml
-
 %.cmo: %.ml
 	ocamlc -c $<
 
