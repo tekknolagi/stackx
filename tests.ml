@@ -26,16 +26,16 @@ let stat_v s = Prog [Fun ("a", [], Prim Int, [s])]
 let exp_v e = stat_v (Exp e)
 
 let expressions = [
-  "1 + 2 - 3"       , InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3);
-   "hello()"        , Funcall (Var "hello", []);
-   "hello(1)"       , Funcall (Var "hello", [IntLit 1]);
-   "hello(1, 2, 3)" , Funcall (Var "hello", [IntLit 1; IntLit 2; IntLit 3]);
-   "hello(a(1))"    , Funcall (Var "hello", [Funcall (Var "a", [IntLit 1])]);
-   "1 < 3"          , InfixOper (Lt, IntLit 1, IntLit 3);
-   "a + b"          , InfixOper (Plus, Var "a", Var "b");
-   "'c'"            , CharLit 'c';
-   "3()"            , Funcall (IntLit 3, []);
-   "a && 1 + 2 >3"  , InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)));
+  "1 + 2 - 3"      , InfixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2), IntLit 3);
+   "hello()"       , Funcall (Var "hello", []);
+   "hello(1)"      , Funcall (Var "hello", [IntLit 1]);
+   "hello(1, 2, 3)", Funcall (Var "hello", [IntLit 1; IntLit 2; IntLit 3]);
+   "hello(a(1))"   , Funcall (Var "hello", [Funcall (Var "a", [IntLit 1])]);
+   "1 < 3"         , InfixOper (Lt, IntLit 1, IntLit 3);
+   "a + b"         , InfixOper (Plus, Var "a", Var "b");
+   "'c'"           , CharLit 'c';
+   "3()"           , Funcall (IntLit 3, []);
+   "a && 1 + 2 >3" , InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)));
 ]
 
 let statements = [
