@@ -36,6 +36,8 @@ let expressions = [
    "'c'"           , CharLit 'c';
    "3()"           , Funcall (IntLit 3, []);
    "a && 1 + 2 >3" , InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)));
+   "!a + b"        , InfixOper (Plus, PrefixOper (Not, Var "a"), Var "b");
+   "1+2 != b"      , PrefixOper (Not, InfixOper (Eq, InfixOper (Plus, IntLit 1, IntLit 2), Var "b"))
 ]
 
 let statements = [
@@ -64,6 +66,7 @@ let check_pass = [
   "func main () : int { if (5 < 3) { return 12; } }", [constcheck; typecheck];
   "func main () : char { return 'h'; }", [typecheck];
   (func_s "let a : int * = &3;"), [typecheck];
+  (func_s "let a : bool = true; !a;"), [typecheck];
 ]
 
 let check_fail = [
@@ -74,6 +77,7 @@ let check_fail = [
   "func f () : int { return 3; } func main () : int { f(3); }", typecheck;
   "func f (a : int) : int { return 3; } func main () : int { f(); }", typecheck;
   (func_s "let a : int * = 3;"), typecheck;
+  (func_s "let a : int = 4; !a;"), typecheck;
 ]
 
 let () = (

@@ -4,7 +4,7 @@
 %token <string> VAR
 %token AMP
 %token PLUS MINUS STAR DIV
-%token LT LTE GT GTE EQ
+%token LT LTE GT GTE EQ NOT NEQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
 %token TVoid TInt TString TBool TChar
@@ -74,8 +74,8 @@ logical_and_expression:
 
 equal_not_expression:
   | equal_not_expression EQ less_equal_expression   { Ast.AST.(InfixOper (Eq, $1, $3)) }
+  | equal_not_expression NEQ less_equal_expression  { Ast.AST.(PrefixOper (Not, InfixOper (Eq, $1, $3))) }
   | less_equal_expression                           { $1 }
-  (* TODO: Add the missing != operator here *)
 ;
 
 less_equal_expression:
@@ -101,6 +101,7 @@ mult_div_expression:
 unary_expression:
   | PLUS unary_expression    { Ast.AST.(PrefixOper (Plus, $2)) }
   | MINUS unary_expression   { Ast.AST.(PrefixOper (Minus, $2)) }
+  | NOT unary_expression     { Ast.AST.(PrefixOper (Not, $2)) }
   | STAR unary_expression    { Ast.AST.Deref $2 }
   | AMP unary_expression     { Ast.AST.Ref $2 }
   | call_expression         { $1 }

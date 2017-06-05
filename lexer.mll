@@ -42,5 +42,7 @@ rule token = parse
   | "<="           { LTE }
   | ">="           { GTE }
   | "=="           { EQ }
+  | "!"            { NOT }
+  | "!="           { NEQ }
   | eof            { EOF }
   | _              { raise (Failure "unknown token") }

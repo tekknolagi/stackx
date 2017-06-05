@@ -3,27 +3,6 @@ module Typed_AST = struct
   type var = name * Ast.Type.t
   let string_of_var (n, t) = n ^ " : " ^ Ast.Type.to_string t
 
-  type mop =
-    | Plus
-    | Minus
-    | Times
-    | Div
-  let string_of_mop = function
-    | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
-
-  type cop =
-    | Lt
-    | Gt
-    | Lte
-    | Gte
-    | Eq
-    | And
-    | Or
-  let string_of_cop = function
-    | Lt -> "<" | Gt -> ">"
-    | Lte -> "<=" | Gte -> ">=" | Eq -> "=="
-    | And -> "&&" | Or -> "||"
-
   type exp = Ast.Type.t * Ast.AST.exp
   let string_of_exp (t, e) = Ast.AST.string_of_exp e ^ " : " ^ Ast.Type.to_string t
 
@@ -128,6 +107,7 @@ module Typed_AST = struct
       "u-", Arrow [Prim Int; Prim Int];
       "*", Arrow [Prim Int; Prim Int; Prim Int];
       "/", Arrow [Prim Int; Prim Int; Prim Int];
+      "u!", Arrow [Prim Bool; Prim Bool];
       "==", Arrow [Prim Int; Prim Int; Prim Bool];
       "<",  Arrow [Prim Int; Prim Int; Prim Bool];
       "<=", Arrow [Prim Int; Prim Int; Prim Bool];

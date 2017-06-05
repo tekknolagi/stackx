@@ -33,12 +33,14 @@ module AST = struct
     | Lte
     | Gte
     | Eq
+    | Not
     | And
     | Or
   let string_of_op = function
     | Plus -> "+" | Minus -> "-" | Times -> "*" | Div -> "/"
     | Lt -> "<" | Gt -> ">"
     | Lte -> "<=" | Gte -> ">=" | Eq -> "=="
+    | Not -> "!"
     | And -> "&&" | Or -> "||"
 
   type exp =
