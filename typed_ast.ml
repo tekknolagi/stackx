@@ -104,7 +104,7 @@ module Typed_AST = struct
           else Varenv.bind n t tyenv
       | Fun (n, formals, t, body) ->
           let newenv = (List.map (fun (n, t) -> (n, t)) formals)::tyenv in
-          let () = check_fun t body newenv in
+          let () = check_fun t body (Varenv.newframe newenv) in
           Varenv.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
     in
     let basis = Ast.Type.([[

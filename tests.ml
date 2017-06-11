@@ -37,7 +37,8 @@ let expressions = [
    "3()"           , Funcall (IntLit 3, []);
    "a && 1 + 2 >3" , InfixOper (And, Var "a", (InfixOper (Gt, (InfixOper (Plus, IntLit 1, IntLit 2)), IntLit 3)));
    "!a + b"        , InfixOper (Plus, PrefixOper (Not, Var "a"), Var "b");
-   "1+2 != b"      , PrefixOper (Not, InfixOper (Eq, InfixOper (Plus, IntLit 1, IntLit 2), Var "b"))
+   "1+2 != b"      , PrefixOper (Not, InfixOper (Eq, InfixOper (Plus, IntLit 1, IntLit 2), Var "b"));
+   "-(1+2)"        , PrefixOper (Minus, InfixOper (Plus, IntLit 1, IntLit 2));
 ]
 
 let statements = [
