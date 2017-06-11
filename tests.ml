@@ -68,6 +68,7 @@ let check_pass = [
   "func main () : char { return 'h'; }", [typecheck];
   (func_s "let a : int * = &3;"), [typecheck];
   (func_s "let a : bool = true; !a;"), [typecheck];
+  (func_s "let a : bool = true; if (true) { let a : int = 5; }"), [typecheck];
 ]
 
 let check_fail = [
@@ -79,6 +80,7 @@ let check_fail = [
   "func f (a : int) : int { return 3; } func main () : int { f(); }", typecheck;
   (func_s "let a : int * = 3;"), typecheck;
   (func_s "let a : int = 4; !a;"), typecheck;
+  (func_s "let a : bool = true; let a : int = 5;"), typecheck;
 ]
 
 let () = (
