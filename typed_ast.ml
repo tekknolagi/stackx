@@ -4,7 +4,8 @@ module Typed_AST = struct
   let string_of_var (n, t) = n ^ " : " ^ Ast.Type.to_string t
 
   type exp = Ast.Type.t * Ast.AST.exp
-  let string_of_exp (t, e) = Ast.AST.string_of_exp e ^ " : " ^ Ast.Type.to_string t
+  let string_of_exp (t, e) =
+    Ast.AST.string_of_exp e ^ " : " ^ Ast.Type.to_string t
 
   type statement = Ast.Type.t * Ast.AST.statement
   type toplevel_def = Ast.Type.t * Ast.AST.toplevel_def
@@ -32,8 +33,10 @@ module Typed_AST = struct
                                    ^ to_string a)
         | (Arrow [t], []) -> t
         | (Arrow _, ls) -> raise @@ TypeMismatch "too few arguments"
-        | (Prim _, _) -> raise @@ TypeMismatch "non-function variable called as function"
-        | (Pointer _, _) -> raise @@ TypeMismatch "non-function variable called as function"
+        | (Prim _, _) ->
+            raise @@ TypeMismatch "non-function variable called as function"
+        | (Pointer _, _) ->
+            raise @@ TypeMismatch "non-function variable called as function"
         (* | (Pointer (Arrow formals), actuals) -> tyapply  *)
       in
       let rec ty = function
@@ -53,11 +56,12 @@ module Typed_AST = struct
           tyApply tyO [ty e1; ty e2]
       | Funcall (f, actuals) ->
           tyApply (ty @@ f) (List.map ty actuals)
-      (* Will exist; checked earlier in pipeline. *)
-      | SetEq (n, e) ->
-          (match (ty (Var n), ty e) with
+      | SetEq (n, e) -> ( (* Will exist; checked earlier in pipeline. *)
+        match (ty (Var n), ty e) with
           | (tyN, tyE) when tyN=tyE -> tyE
-          | _ -> raise @@ TypeMismatch ("assignment changes type of variable " ^ n))
+          | _ ->
+              raise @@ TypeMismatch ("assignment changes type of variable " ^ n)
+        )
       in ty e
     in
     let rec check_statement t tyenv stmt =
@@ -69,7 +73,8 @@ module Typed_AST = struct
                                         ^ "type. found " ^ to_string t'
                                         ^ " but expected " ^ to_string t)
          )
-      | Let (_, (n, t), e) when Varenv.exists_curframe n tyenv -> raise @@ Redefinition n
+      | Let (_, (n, t), e) when Varenv.exists_curframe n tyenv ->
+          raise @@ Redefinition n
       | Let (_, (n, t), e) ->
           (match type_of tyenv e with
           | tyE when tyE=t -> Varenv.bind n t tyenv
@@ -80,12 +85,15 @@ module Typed_AST = struct
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
           | Prim Ast.Type.Bool ->
-              (ignore @@ List.fold_left (check_statement t) tyenv iftrue;
-               ignore @@ List.fold_left (check_statement t) tyenv iffalse;
+              let ifenv = Varenv.newframe tyenv in
+              (ignore @@ List.fold_left (check_statement t) ifenv iftrue;
+               ignore @@ List.fold_left (check_statement t) ifenv iffalse;
                tyenv)
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
-      | If (cond, iftrue) -> check_statement t tyenv (IfElse (cond, iftrue, []))
-      | Exp e -> (ignore @@ type_of tyenv e; tyenv)
+      | If (cond, iftrue) ->
+          check_statement t (Varenv.newframe tyenv) (IfElse (cond, iftrue, []))
+      | Exp e ->
+          (ignore @@ type_of tyenv e; tyenv)
     in
     let check_fun t body tyenv =
       ignore @@ List.fold_left (check_statement t) tyenv body
@@ -134,8 +142,10 @@ module Typed_AST = struct
            ignore @@ List.fold_left check_statement env iftrue;
            env)
       | If (cond, iftrue) -> check_statement env (IfElse (cond, iftrue, []))
-      | Exp (SetEq (n, _)) when Varenv.unbound n env -> raise @@ UnboundVariable n
-      | Exp (SetEq (n, _)) when `Const=Varenv.assoc n env -> raise @@ SettingConst n
+      | Exp (SetEq (n, _)) when Varenv.unbound n env ->
+          raise @@ UnboundVariable n
+      | Exp (SetEq (n, _)) when `Const=Varenv.assoc n env ->
+          raise @@ SettingConst n
       | Exp (SetEq (n, _)) when `Mut=Varenv.assoc n env -> env
       | Exp (SetEq (_, e)) -> check_statement env (Exp e)
       | _ -> env
