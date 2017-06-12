@@ -73,6 +73,7 @@ module AST = struct
   type lettype =
     | LLet
     | LConst
+  let string_of_let = function | LLet -> "let" | LConst -> "const"
 
   type statement =
     | Let of lettype * var * exp
@@ -80,9 +81,28 @@ module AST = struct
     | IfElse of exp * statement list * statement list
     | Return of exp
     | Exp of exp
+  let rec string_of_statement = function
+    | Let (lt, v, e) ->
+        string_of_let lt ^ " " ^ string_of_var v ^ " = " ^ string_of_exp e ^ ";"
+    | If (cond, iftrue) ->
+        "if (" ^ string_of_exp cond ^ ") " ^ string_of_block iftrue
+    | IfElse (cond, iftrue, iffalse) ->
+        string_of_statement (If (cond, iftrue)) ^ " else " ^ string_of_block iffalse
+    | Return e -> "return " ^ string_of_exp e ^ ";"
+    | Exp e -> string_of_exp e ^ ";"
+  and string_of_block block =
+    "{\n" ^ (String.concat "\n" @@ List.map string_of_statement block) ^ "\n}"
+
   type toplevel_def =
     | Fun of name * var list * Type.t * statement list
     | Const of var * exp
+  let string_of_toplevel_def = function
+    | Fun (name, formals, ty, body) ->
+        "func " ^ name ^ "(" ^ (String.concat ", " @@ List.map string_of_var
+        formals) ^ ") : " ^ Type.to_string ty ^ "\n" ^ string_of_block body
+    | Const (v, e) -> string_of_statement (Let (LConst, v, e))
   type program = Prog of toplevel_def list
+  let string_of_program (Prog defs) =
+    String.concat "\n" @@ List.map string_of_toplevel_def defs
   type t = program
 end

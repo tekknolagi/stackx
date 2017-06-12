@@ -27,6 +27,7 @@ _build
 /parser.ml
 /lexer.ml
 /tests
+/shell
 /typechecker
 
 ocamlbuild.install

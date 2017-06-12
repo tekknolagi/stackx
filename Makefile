@@ -1,11 +1,16 @@
-all: tests
+all: tests shell
 
-.PHONY: all tests
+.PHONY: all tests shell
 
 tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o tests \
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
 					 typed_ast.cmo tests.cmo
+
+shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo shell.cmo
+	ocamlfind ocamlc -package menhirLib -linkpkg -o shell \
+			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
+					 typed_ast.cmo shell.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml
@@ -33,3 +38,4 @@ clean:
 	-rm -f lexer.cmi lexer.cmo lexer.ml
 	-rm -f parser.cmi parser.cmo parser.ml parser.mli
 	-rm -f tests tests.cmi tests.cmo
+	-rm -f shell shell.cmi shell.cmo
