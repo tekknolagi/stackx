@@ -62,14 +62,22 @@ let programs = [
 ]
 
 let check_pass = [
-  "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }", [constcheck; typecheck];
-  "const a : int = 5; func b (a : int) : bool { return thing(5,3); }", [constcheck; typecheck];
-  "func main () : bool { return voidf(); }", [constcheck; typecheck];
-  "func main () : int { if (5 < 3) { return 12; } }", [constcheck; typecheck];
-  "func main () : char { return 'h'; }", [typecheck];
-  (func_s "let a : int * = &3;"), [typecheck];
-  (func_s "let a : bool = true; !a;"), [typecheck];
-  (func_s "let a : bool = true; if (true) { let a : int = 5; }"), [typecheck];
+  "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }",
+    [constcheck; typecheck];
+  "const a : int = 5; func b (a : int) : bool { return thing(5,3); }",
+    [constcheck; typecheck];
+  "func main () : bool { return voidf(); }",
+    [constcheck; typecheck];
+  "func main () : int { if (5 < 3) { return 12; } }",
+    [constcheck; typecheck];
+  "func main () : char { return 'h'; }",
+    [typecheck];
+  (func_s "let a : int * = &3;"),
+    [typecheck];
+  (func_s "let a : bool = true; !a;"),
+    [typecheck];
+  (func_s "let a : bool = true; if (true) { let a : int = 5; }"),
+    [typecheck];
 ]
 
 let check_fail = [
