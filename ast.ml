@@ -2,20 +2,18 @@ module Type = struct
   type prim = Void | Int | String | Bool | Char
 
   let rec prim_to_string = function
-    | Void -> "void"
-    | Int -> "int"
-    | String -> "string"
-    | Bool -> "bool"
-    | Char -> "char"
+    | Void -> "Void"
+    | Int -> "Int"
+    | String -> "String"
+    | Bool -> "Bool"
+    | Char -> "Char"
 
   type t = Prim of prim | Arrow of t list | Pointer of t
-  let rec to_string ty =
-    let s ts = String.concat " -> " @@ List.map to_string ts in
-    match ty with
-    | Prim t -> prim_to_string t
-    | Arrow [x] -> s [Prim Void; x]
-    | Arrow ts -> s ts
-    | Pointer t -> to_string t ^ "*"
+  let rec to_string = function
+    | Prim t -> "Prim " ^ prim_to_string t
+    | Arrow ts ->
+        "Arrow [" ^ (String.concat "; " @@ List.map to_string ts) ^ "]"
+    | Pointer t -> "Pointer (" ^ to_string t ^ ")"
 end
 
 module AST = struct
@@ -54,21 +52,21 @@ module AST = struct
     | Funcall of exp * exp list
     | SetEq of name * exp
   let rec string_of_exp = function
-    | IntLit i -> string_of_int i
-    | CharLit c -> "'" ^ String.make 1 c ^ "'"
-    | Var n -> n
-    | Ref e -> "(&(" ^ string_of_exp e ^ "))"
-    | Deref e -> "(*(" ^ string_of_exp e ^ "))"
+    | IntLit i -> "IntLit " ^ string_of_int i
+    | CharLit c -> "CharLit " ^ String.make 1 c
+    | Var n -> "Var \"" ^ n ^ "\""
+    | Ref e -> "Ref (" ^ string_of_exp e ^ ")"
+    | Deref e -> "Deref (" ^ string_of_exp e ^ ")"
     | PrefixOper (o, e) ->
         "(" ^ string_of_op o ^ "(" ^ string_of_exp e ^ "))"
     | InfixOper (o, e1, e2) ->
         "((" ^ string_of_exp e1 ^ ") "
         ^ string_of_op o ^
-        "(" ^ string_of_exp e2 ^ "))"
+        " (" ^ string_of_exp e2 ^ "))"
     | Funcall (n, es) ->
-        string_of_exp n ^ "("
+        "Funcall (" ^ string_of_exp n ^ ", "
         ^ (String.concat "," @@ List.map string_of_exp es) ^ ")"
-    | SetEq (n, e) -> n ^ " = " ^ string_of_exp e
+    | SetEq (n, e) -> "SetEq (" ^ n ^ ", " ^ string_of_exp e ^ ")"
 
   type lettype =
     | LLet
