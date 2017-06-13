@@ -20,12 +20,5 @@ See [tests.ml](tests.ml) to see what the binary does.
 
 1. `make clean` and `make`
 2. `ocaml` or `utop`
-3. In the shell:
-
-   1. `#load "lexer.cmo";;`
-   2. `#load "parser.cmo";;`
-   3. `#load "varenv.cmo";;`
-   4. `#load "ast.cmo";;`
-   5. `#load "typed_ast.cmo";;`
-   6. `#load "tests.cmo";;`
-   7. `Tests.parse "func a () : int { 1; }";;`
+3. `./shell` -- keep in mind that this only accepts full programs as input, and
+   each only on one line
