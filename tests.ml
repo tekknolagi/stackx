@@ -22,8 +22,8 @@ let chkfail str f =
 
 let print_tyenv env = print_endline @@ "[" ^ (String.concat "; " @@ List.map (fun (n, t) -> "(" ^ n ^ ", " ^ to_string t ^ ")") env)
 
-let func_s s = "func a() : int { " ^ s ^ "}"
-let stat_v s = Prog [Fun ("a", [], Prim Int, [s])]
+let func_s s = "func a() : u32 { " ^ s ^ "}"
+let stat_v s = Prog [Fun ("a", [], Prim u32, [s])]
 let exp_v e = stat_v (Exp e)
 
 let expressions = [
@@ -43,53 +43,53 @@ let expressions = [
 ]
 
 let statements = [
-  "let a : int = 4;"         , Let (LLet, ("a", Prim Int), (IntLit 4));
-  "const a : int = 4;"       , Let (LConst, ("a", Prim Int), (IntLit 4));
+  "let a : u32 = 4;"         , Let (LLet, ("a", Prim u32), (IntLit 4));
+  "const a : u32 = 4;"       , Let (LConst, ("a", Prim u32), (IntLit 4));
   "if (3) { 4; }"            , If (IntLit 3, [Exp (IntLit 4)]);
   "if (3) { 4; } else { 5; }", IfElse (IntLit 3, [Exp (IntLit 4)], [Exp (IntLit 5)]);
   "return 10;"               , Return (IntLit 10);
   "return a(1);"             , Return (Funcall (Var "a", [IntLit 1]));
   "a = 2 + 3;"               , Exp (SetEq ("a", (InfixOper (Plus, IntLit 2, IntLit 3))));
-  "let a : int * = &3;"      , Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)));
-  "let a : int * = 3;"       , Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3));
+  "let a : u32 * = &3;"      , Let (LLet, ("a", Pointer (Prim u32)), (Ref (IntLit 3)));
+  "let a : u32 * = 3;"       , Let (LLet, ("a", Pointer (Prim u32)), (IntLit 3));
 ]
 
 let programs = [
-  "const a : int = 5; func b () : bool { 1; }",
-    Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [Exp (IntLit 1)])];
-  "const a : int = 5; func b () : bool { }",
-    Prog [Const (("a", Prim Int), (IntLit 5)); Fun ("b", [], Prim Bool, [])];
+  "const a : u32 = 5; func b () : bool { 1; }",
+    Prog [Const (("a", Prim u32), (IntLit 5)); Fun ("b", [], Prim `Bool, [Exp (IntLit 1)])];
+  "const a : u32 = 5; func b () : bool { }",
+    Prog [Const (("a", Prim u32), (IntLit 5)); Fun ("b", [], Prim `Bool, [])];
 ]
 
 let check_pass = [
-  "func main () : void { let a : int = 5; a = 3; let b : int = 4; b = -2 * a; }",
+  "func main () : void { let a : u32 = 5; a = 3; let b : u32 = 4; b = -2 * a; }",
     [constcheck; typecheck];
-  "const a : int = 5; func b (a : int) : bool { return thing(5,3); }",
+  "const a : u32 = 5; func b (a : u32) : bool { return thing(5, 3); }",
     [constcheck; typecheck];
   "func main () : bool { return voidf(); }",
     [constcheck; typecheck];
-  "func main () : int { if (5 < 3) { return 12; } }",
+  "func main () : u32 { if (5 < 3) { return 12; } }",
     [constcheck; typecheck];
   "func main () : char { return 'h'; }",
     [typecheck];
-  (func_s "let a : int * = &3;"),
+  (func_s "let a : u32 * = &3;"),
     [typecheck];
   (func_s "let a : bool = true; !a;"),
     [typecheck];
-  (func_s "let a : bool = true; if (true) { let a : int = 5; }"),
+  (func_s "let a : bool = true; if (true) { let a : u32 = 5; }"),
     [typecheck];
 ]
 
 let check_fail = [
-  "func main () : int { if (5 < 3) { return true; } }", typecheck;
-  "func main () : int { const a : int = 4; a = 3; }", constcheck;
-  "func main () : int { a = 3; }", constcheck;
-  "func main () : int { let a : int = 4; let a : int = 3; }", typecheck;
-  "func f () : int { return 3; } func main () : int { f(3); }", typecheck;
-  "func f (a : int) : int { return 3; } func main () : int { f(); }", typecheck;
-  (func_s "let a : int * = 3;"), typecheck;
-  (func_s "let a : int = 4; !a;"), typecheck;
-  (func_s "let a : bool = true; let a : int = 5;"), typecheck;
+  "func main () : u32 { if (5 < 3) { return true; } }", typecheck;
+  "func main () : u32 { const a : u32 = 4; a = 3; }", constcheck;
+  "func main () : u32 { a = 3; }", constcheck;
+  "func main () : u32 { let a : u32 = 4; let a : u32 = 3; }", typecheck;
+  "func f () : u32 { return 3; } func main () : u32 { f(3); }", typecheck;
+  "func f (a : u32) : u32 { return 3; } func main () : u32 { f(); }", typecheck;
+  (func_s "let a : u32 * = 3;"), typecheck;
+  (func_s "let a : u32 = 4; !a;"), typecheck;
+  (func_s "let a : bool = true; let a : u32 = 5;"), typecheck;
 ]
 
 let () = (

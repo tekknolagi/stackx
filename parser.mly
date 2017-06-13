@@ -7,7 +7,8 @@
 %token LT LTE GT GTE EQ NOT NEQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse
-%token TVoid TInt TString TBool TChar
+%token TU8 TI8 TU16 TI16 TU32 TI32 TU64 TI64 TF32 TF64
+%token TVoid TString TBool TChar
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
@@ -127,9 +128,18 @@ type_expression:
 ;
 
 type_identifier:
-  | TVoid     { Ast.Type.(Prim Void) }
-  | TInt      { Ast.Type.(Prim Int) }
-  | TString   { Ast.Type.(Prim String) }
-  | TBool     { Ast.Type.(Prim Bool) }
-  | TChar     { Ast.Type.(Prim Char) }
+  | TVoid     { Ast.Type.(Prim `Void) }
+  | TU8       { Ast.Type.(Prim (`Num (`U, 8))) }
+  | TI8       { Ast.Type.(Prim (`Num (`I, 8))) }
+  | TU16      { Ast.Type.(Prim (`Num (`U, 16))) }
+  | TI16      { Ast.Type.(Prim (`Num (`I, 16))) }
+  | TU32      { Ast.Type.(Prim (`Num (`U, 32))) }
+  | TI32      { Ast.Type.(Prim (`Num (`I, 32))) }
+  | TU64      { Ast.Type.(Prim (`Num (`U, 64))) }
+  | TI64      { Ast.Type.(Prim (`Num (`I, 64))) }
+  | TF32      { Ast.Type.(Prim (`Num (`F, 32))) }
+  | TF64      { Ast.Type.(Prim (`Num (`F, 64))) }
+  | TString   { Ast.Type.(Prim `String) }
+  | TBool     { Ast.Type.(Prim `Bool) }
+  | TChar     { Ast.Type.(Prim `Char) }
 ;

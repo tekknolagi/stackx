@@ -1,12 +1,20 @@
 module Type = struct
-  type prim = Void | Int | String | Bool | Char
+  type sign = [ `U | `I | `F ]
+  let string_of_sign = function | `U -> "u" | `I -> "i" | `F -> "f"
+
+  type numtype = [ `Num of [`U | `I | `F] * int ]
+  let string_of_numtype (s, i) = string_of_sign s ^ string_of_int i
+
+  type prim = [ `Void | numtype | `String | `Bool | `Char ]
+
+  let u32 : prim = `Num (`U, 32)
 
   let rec prim_to_string = function
-    | Void -> "Void"
-    | Int -> "Int"
-    | String -> "String"
-    | Bool -> "Bool"
-    | Char -> "Char"
+    | `Void -> "Void"
+    | `Num i -> string_of_numtype i
+    | `String -> "String"
+    | `Bool -> "Bool"
+    | `Char -> "Char"
 
   type t = Prim of prim | Arrow of t list | Pointer of t
   let rec to_string = function

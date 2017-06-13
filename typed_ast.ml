@@ -40,8 +40,8 @@ module Typed_AST = struct
         (* | (Pointer (Arrow formals), actuals) -> tyapply  *)
       in
       let rec ty = function
-      | IntLit _ -> Prim Ast.Type.Int
-      | CharLit _ -> Prim Ast.Type.Char
+      | IntLit _ -> Prim (`Num (`I, 32))
+      | CharLit _ -> Prim `Char
       | Var n -> Varenv.assoc n tyenv
       | Ref e -> Pointer (ty e)
       | Deref e ->
@@ -84,7 +84,7 @@ module Typed_AST = struct
                                      ^ to_string t))
       | IfElse (cond, iftrue, iffalse) ->
           (match type_of tyenv cond with
-          | Prim Ast.Type.Bool ->
+          | Prim `Bool ->
               let ifenv = Varenv.newframe tyenv in
               (ignore @@ List.fold_left (check_statement t) ifenv iftrue;
                ignore @@ List.fold_left (check_statement t) ifenv iffalse;
@@ -108,23 +108,23 @@ module Typed_AST = struct
           Varenv.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
     in
     let basis = Ast.Type.([[
-      "true", Prim Bool;
-      "false", Prim Bool;
-      "+", Arrow [Prim Int; Prim Int; Prim Int];
-      "-", Arrow [Prim Int; Prim Int; Prim Int];
-      "u-", Arrow [Prim Int; Prim Int];
-      "*", Arrow [Prim Int; Prim Int; Prim Int];
-      "/", Arrow [Prim Int; Prim Int; Prim Int];
-      "u!", Arrow [Prim Bool; Prim Bool];
-      "==", Arrow [Prim Int; Prim Int; Prim Bool];
-      "<",  Arrow [Prim Int; Prim Int; Prim Bool];
-      "<=", Arrow [Prim Int; Prim Int; Prim Bool];
-      ">",  Arrow [Prim Int; Prim Int; Prim Bool];
-      ">=", Arrow [Prim Int; Prim Int; Prim Bool];
-      "&&", Arrow [Prim Bool; Prim Bool; Prim Bool];
-      "||", Arrow [Prim Bool; Prim Bool; Prim Bool];
-      "thing", Arrow [Prim Int; Prim Int; Prim Bool];
-      "voidf", Arrow [Prim Bool]
+      "true", Prim `Bool;
+      "false", Prim `Bool;
+      "+", Arrow [Prim u32; Prim u32; Prim u32];
+      "-", Arrow [Prim u32; Prim u32; Prim u32];
+      "u-", Arrow [Prim u32; Prim u32];
+      "*", Arrow [Prim u32; Prim u32; Prim u32];
+      "/", Arrow [Prim u32; Prim u32; Prim u32];
+      "u!", Arrow [Prim `Bool; Prim `Bool];
+      "==", Arrow [Prim u32; Prim u32; Prim `Bool];
+      "<",  Arrow [Prim u32; Prim u32; Prim `Bool];
+      "<=", Arrow [Prim u32; Prim u32; Prim `Bool];
+      ">",  Arrow [Prim u32; Prim u32; Prim `Bool];
+      ">=", Arrow [Prim u32; Prim u32; Prim `Bool];
+      "&&", Arrow [Prim `Bool; Prim `Bool; Prim `Bool];
+      "||", Arrow [Prim `Bool; Prim `Bool; Prim `Bool];
+      "thing", Arrow [Prim u32; Prim u32; Prim `Bool];
+      "voidf", Arrow [Prim `Bool]
     ]])
     in
     match p with

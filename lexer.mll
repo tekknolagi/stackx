@@ -2,6 +2,12 @@
 {
 open Parser        (* The type token is defined in parser.mli *)
 exception Eof
+
+(*
+let parse_number_type s =
+  let get_prefix c = function | 'u' -> `U | 'i' -> `I | 'f' -> `F | _ -> failwith "invalid type prefix" in
+  get_prefix s.[0], int_of_string @@ String.sub s (String.length s - 1)
+*)
 }
 
 rule token = parse
@@ -15,10 +21,19 @@ rule token = parse
   | "if"           { KIf }
   | "else"         { KElse }
   | "void"         { TVoid }
-  | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }
   | "char"         { TChar }
+  | "u8"           { TU8 }
+  | "i8"           { TI8 }
+  | "u16"          { TU16 }
+  | "i16"          { TI16 }
+  | "u32"          { TU32 }
+  | "i32"          { TI32 }
+  | "u64"          { TU64 }
+  | "i64"          { TI64 }
+  | "f32"          { TF32 }
+  | "f64"          { TF64 }
   | '\'' _ '\'' as c { CHAR(c.[1]) }
   | ['a'-'z''A'-'Z']+ as lxm { VAR(lxm) }
   | ['0'-'9']+ as lxm { INT(int_of_string lxm) }
