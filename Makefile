@@ -1,6 +1,6 @@
 all: tests shell
 
-.PHONY: all tests shell
+.PHONY: all
 
 tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o tests \
