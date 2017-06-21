@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
 #include "seq.h"
@@ -18,16 +17,6 @@ inline Seg_T seg_new (word size, word id) {
 
     return seg;
 }
-
-inline Seg_T seg_dup (Seg_T seg) {
-    assert(seg != NULL);
-
-    Seg_T duplicated = seg_new(seg->len, 0);
-    memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
-
-    return duplicated;
-}
-
 
 Mem_T mem_new (Seg_T seg0) {
     assert(seg0 != NULL);

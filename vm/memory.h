@@ -1,6 +1,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include <string.h>
+
 #include "seq.h"
 #include "word.h"
 
@@ -18,7 +20,6 @@ struct mem {
 };
 typedef struct mem *Mem_T;
 
-Seg_T seg_dup (Seg_T seg);
 Seg_T seg_new (word size, word id);
 
 #define T Mem_T
@@ -55,7 +56,11 @@ static inline void mem_store (T mem, word segid, word off, word val) {
 static inline void mem_dup (Mem_T mem, word segid) {
     assert(mem != NULL);
 
-    Seg_T duplicated = seg_dup(Seq_get(mem->segs, segid));
+    /* Duplicate the segment. */
+    Seg_T seg = Seq_get(mem->segs, segid);
+    Seg_T duplicated = seg_new(seg->len, 0);
+    memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
+
     Seg_T seg0 = Seq_get(mem->segs, 0);
     free(seg0);
 
