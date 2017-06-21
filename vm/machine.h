@@ -9,13 +9,6 @@
 enum ops { CMOV = 0, SLOAD, SSTORE, ADD, MULT, DIV, NAND, HALT,
            MAP, UNMAP, OUT, IN, LOADP, LOADV, NUM_OPS };
 
-#ifdef HISTOGRAM
-static char reverse_ops[][7] = { "cmov", "sload", "sstore", "add", "mult",
-                                 "div", "nand", "halt", "map", "unmap", "out",
-                                 "in", "loadp", "loadv"
-                               };
-#endif
-
 enum regs { R0 = 0, R1, R2, R3, R4, R5, R6, R7, NUM_REGS };
 
 #define OP_WIDTH 4

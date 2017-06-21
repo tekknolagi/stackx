@@ -27,28 +27,8 @@ void machine_load (Machine_T m, Seg_T seg0) {
     m->mem = mem_new(seg0);
 }
 
-#ifdef HISTOGRAM
-struct instr {
-    int num;
-    size_t uses;
-};
-
-int cmpfunc (const void *a, const void *b) {
-    struct instr *a_i = a, *b_i = b;
-    return a_i->uses - b_i->uses;
-}
-#endif
-
 void machine_run (Machine_T m) {
     assert(m != NULL);
-
-#ifdef HISTOGRAM
-    struct instr uses[NUM_OPS];
-    for (int i = 0; i < NUM_OPS; i++) {
-        uses[i].num = i;
-        uses[i].uses = 0;
-    }
-#endif
 
     Mem_T mem = m->mem;
     word *regs = m->regs;
@@ -67,12 +47,6 @@ void machine_run (Machine_T m) {
         word rb = (current_word >> 3) & REG_MASK;
         word rc = current_word & REG_MASK;
 
-#ifdef HISTOGRAM
-        uses[instr].uses++;
-#endif
-
-        /* Operations are ordered by % usage in sandmark.umz. Compile
-         * with -DHISTOGRAM to verify. */
         switch (instr) {
             case LOADV: {
                 word ra = (current_word >> 25) & REG_MASK;
@@ -152,16 +126,6 @@ void machine_run (Machine_T m) {
             }
         }
     }
-
-#ifdef HISTOGRAM
-    qsort(uses, NUM_OPS, sizeof(struct instr), cmpfunc);
-
-    for (int i = 0; i < NUM_OPS; i++) {
-        fprintf(stderr, "%s\t%lu\n",
-                reverse_ops[uses[i].num],
-                uses[i].uses);
-    }
-#endif
 }
 
 void machine_free (Machine_T *m) {
