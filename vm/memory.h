@@ -31,9 +31,6 @@ void mem_free (T *mem);
 static word mem_load (T mem, word seg, word off);
 static void mem_store (T mem, word seg, word off, word val);
 
-/* Make a duplicate segment and put it in $m[0]. */
-static void mem_dup (T mem, word seg);
-
 /* Returns a segment ID. */
 word mem_map (T mem, word len);
 void mem_unmap (T mem, word seg);
@@ -51,20 +48,6 @@ static inline void mem_store (T mem, word segid, word off, word val) {
     assert(mem->segs != NULL);
 
     ((Seg_T) Seq_get(mem->segs, segid))->contents[off] = val;
-}
-
-static inline void mem_dup (Mem_T mem, word segid) {
-    assert(mem != NULL);
-
-    /* Duplicate the segment. */
-    Seg_T seg = Seq_get(mem->segs, segid);
-    Seg_T duplicated = seg_new(seg->len, 0);
-    memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
-
-    Seg_T seg0 = Seq_get(mem->segs, 0);
-    free(seg0);
-
-    Seq_put(mem->segs, 0, duplicated);
 }
 
 static inline word get_next_id (T mem) {

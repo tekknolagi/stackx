@@ -92,8 +92,19 @@ void machine_run (Machine_T m) {
             case LOADP: {
                 word rb_val = regs[rb];
                 if (rb_val != 0) {
-                    mem_dup(mem, rb_val);
-                    seg0 = ((Seg_T) Seq_get(mem->segs, 0))->contents;
+                    /* Duplicate the segment. */
+                    word segid = rb_val;
+                    Seg_T seg = Seq_get(mem->segs, segid);
+                    Seg_T duplicated = seg_new(seg->len, 0);
+                    memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
+
+                    /* Free segment 0. */
+                    free(Seq_get(mem->segs, 0));
+
+                    /* Put the duplicate in segment 0. */
+                    Seq_put(mem->segs, 0, duplicated);
+
+                    seg0 = duplicated->contents;
                 }
 
                 ip = regs[rc];
