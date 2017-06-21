@@ -54,7 +54,7 @@ void machine_run (Machine_T m) {
     Mem_T mem = m->mem;
     word *regs = m->regs;
     Seg_T seg0_seg = mem_seg(m->mem, 0);
-    word *seg0 = seg_get_contents(seg0_seg);
+    word *seg0 = seg0_seg->contents;
 
     /* Instruction pointer. */
     word ip = 0;
@@ -75,11 +75,12 @@ void machine_run (Machine_T m) {
         /* Operations are ordered by % usage in sandmark.umz. Compile
          * with -DHISTOGRAM to verify. */
         switch (instr) {
-            case LOADV:
+            case LOADV: {
                 word ra = (current_word >> 25) & REG_MASK;
                 word val = current_word & VAL_MASK;
                 regs[ra] = val;
                 break;
+            }
             case SLOAD:
                 regs[ra] = mem_load(mem, regs[rb], regs[rc]);
                 break;
@@ -89,16 +90,17 @@ void machine_run (Machine_T m) {
             case NAND:
                 regs[ra] = ~(regs[rb] & regs[rc]);
                 break;
-            case LOADP:
+            case LOADP: {
                 word rb_val = regs[rb];
                 if (rb_val != 0) {
                     mem_dup(mem, rb_val);
                     seg0_seg = mem_seg(mem, 0);
-                    seg0 = seg_get_contents(seg0_seg);
+                    seg0 = seg0_seg->contents;
                 }
 
                 ip = regs[rc];
                 break;
+            }
             case ADD:
                 regs[ra] = regs[rb] + regs[rc];
                 break;
@@ -126,7 +128,7 @@ void machine_run (Machine_T m) {
             case HALT:
                 running = false;
                 break;
-            case IN:
+            case IN: {
                 int c = getc(stdin);
 
                 if (c == EOF) {
@@ -138,6 +140,7 @@ void machine_run (Machine_T m) {
                     regs[rc] = c & 0xFF;
                 }
                 break;
+            }
         }
     }
 

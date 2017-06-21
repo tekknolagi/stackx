@@ -7,9 +7,9 @@
 #include "seg.h"
 
 struct mem {
-	Seq_T segs;
-        Seq_T unmapped;
-        word seg_inc;
+    Seq_T segs;
+    Seq_T unmapped;
+    word seg_inc;
 };
 
 typedef struct mem *Mem_T;
@@ -34,70 +34,70 @@ void mem_unmap (T mem, word seg);
 
 static inline Seg_T memtable_get (Seq_T segs, word id)
 {
-	return Seq_get(segs, id);
+    return Seq_get(segs, id);
 }
 
 static inline void memtable_set (Seq_T segs, word id, Seg_T seg)
 {
-	Seq_put(segs, id, seg);
+    Seq_put(segs, id, seg);
 }
 
 static inline void memtable_rem (Seq_T segs, word id)
 {
-	Seq_put(segs, id, NULL);
+    Seq_put(segs, id, NULL);
 }
 
 static inline Seg_T mem_seg (T mem, word segid)
 {
-	assert(mem != NULL);
-	assert(mem->segs != NULL);
+    assert(mem != NULL);
+    assert(mem->segs != NULL);
 
-	return memtable_get(mem->segs, segid);
+    return memtable_get(mem->segs, segid);
 }
 
 /* Returns a value at $m[seg][off]. */
 static inline word mem_load (T mem, word segid, word off)
 {
-        assert(mem != NULL);
-        assert(mem->segs != NULL);
+    assert(mem != NULL);
+    assert(mem->segs != NULL);
 
-        Seg_T seg = memtable_get(mem->segs, segid);
+    Seg_T seg = memtable_get(mem->segs, segid);
 
-        return seg_get(seg, off);
+    return seg->contents[off];
 }
 
 static inline void mem_store (T mem, word segid, word off, word val)
 {
-        assert(mem != NULL);
-        assert(mem->segs != NULL);
+    assert(mem != NULL);
+    assert(mem->segs != NULL);
 
-        Seg_T seg = memtable_get(mem->segs, segid);
+    Seg_T seg = memtable_get(mem->segs, segid);
 
-        seg_set(seg, off, val);
+    seg->contents[off] = val;
 }
 
 static inline void mem_dup (Mem_T mem, word segid)
 {
-        assert(mem != NULL);
+    assert(mem != NULL);
 
-        Seg_T duplicated = seg_dup(memtable_get(mem->segs, segid));
-        Seg_T seg0 = memtable_get(mem->segs, 0);
-        seg_free(&seg0);
+    Seg_T duplicated = seg_dup(memtable_get(mem->segs, segid));
+    Seg_T seg0 = memtable_get(mem->segs, 0);
+    seg_free(&seg0);
 
-        memtable_set(mem->segs, 0, duplicated);
+    memtable_set(mem->segs, 0, duplicated);
 }
 
 static inline word get_next_id (T mem)
 {
-        assert(mem != NULL);
-        assert(mem->unmapped != NULL);
+    assert(mem != NULL);
+    assert(mem->unmapped != NULL);
 
-        if (Seq_length(mem->unmapped) > 0) {
-                return (word) (uint64_t) Seq_remhi(mem->unmapped);
-        }
-        else {
-                return mem->seg_inc++;
-        }
+    if (Seq_length(mem->unmapped) > 0) {
+        return (word) (uint64_t) Seq_remhi(mem->unmapped);
+    }
+    else {
+        return mem->seg_inc++;
+    }
 }
 
 #undef T

@@ -58,7 +58,7 @@ Seg_T fileio_read (char *fn)
                 /* Since arrays are contiguous, we can interpret the
                    four-byte char array as one 32-bit word. */
                 word current_word = *(word *) current_word_chars;
-                seg_set(prog, ind++, current_word);
+                prog->contents[ind++] = current_word;
         }
 
         fclose(fp);
