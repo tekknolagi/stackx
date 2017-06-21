@@ -1,10 +1,31 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "seq.h"
 #include "memory.h"
 
 static const int TABLE_RANDOM_HINT = 100;
+
+Seq_T Seq_new (uint32_t hint) {
+    Seq_T seq = calloc(1, sizeof *seq);
+    assert(seq != NULL);
+
+    seq->contents = calloc(hint, sizeof *seq->contents);
+    assert(seq->contents != NULL);
+
+    seq->length = 0;
+    seq->capacity = hint;
+
+    return seq;
+}
+
+void Seq_free (Seq_T *s) {
+    assert(s != NULL);
+
+    free((*s)->contents);
+    free(*s);
+
+    *s = NULL;
+}
 
 inline Seg_T seg_new (word size, word id) {
     /* calloc ensures every bit is 0 */
