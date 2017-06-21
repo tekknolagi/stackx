@@ -1,0 +1,5 @@
+um
+asm
+*.o
+*.um*
+*.orig
