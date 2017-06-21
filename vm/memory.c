@@ -5,7 +5,7 @@
 #include "seq.h"
 #include "memory.h"
 
-static const int TABLE_RANDOM_HINT = 100000;
+static const int TABLE_RANDOM_HINT = 100;
 
 inline Seg_T seg_new (word size, word id) {
     /* calloc ensures every bit is 0 */
@@ -29,8 +29,7 @@ inline Seg_T seg_dup (Seg_T seg) {
 }
 
 
-Mem_T mem_new (Seg_T seg0)
-{
+Mem_T mem_new (Seg_T seg0) {
     assert(seg0 != NULL);
 
     Mem_T mem = calloc(1, sizeof *mem);
@@ -46,8 +45,7 @@ Mem_T mem_new (Seg_T seg0)
     return mem;
 }
 
-void mem_free (Mem_T *mem)
-{
+void mem_free (Mem_T *mem) {
     assert(*mem != NULL);
     assert((*mem)->segs != NULL);
     assert((*mem)->unmapped != NULL);
@@ -72,8 +70,7 @@ void mem_free (Mem_T *mem)
 }
 
 /* Returns a segment ID. */
-word mem_map (Mem_T mem, word len)
-{
+word mem_map (Mem_T mem, word len) {
     assert(mem != NULL);
     assert(mem->segs != NULL);
     assert(mem->unmapped != NULL);
@@ -91,8 +88,7 @@ word mem_map (Mem_T mem, word len)
     return id;
 }
 
-void mem_unmap (Mem_T mem, word segid)
-{
+void mem_unmap (Mem_T mem, word segid) {
     assert(mem != NULL);
     assert(mem->segs != NULL);
     assert(mem->unmapped != NULL);
