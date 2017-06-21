@@ -4,13 +4,10 @@
 #include <stdbool.h>
 
 #include "word.h"
-
-#include "seg.h"
 #include "memory.h"
 
 enum ops { CMOV = 0, SLOAD, SSTORE, ADD, MULT, DIV, NAND, HALT,
-           MAP, UNMAP, OUT, IN, LOADP, LOADV, NUM_OPS
-         };
+           MAP, UNMAP, OUT, IN, LOADP, LOADV, NUM_OPS };
 
 #ifdef HISTOGRAM
 static char reverse_ops[][7] = { "cmov", "sload", "sstore", "add", "mult",

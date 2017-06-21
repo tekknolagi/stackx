@@ -3,11 +3,9 @@
 
 #include <inttypes.h>
 
-#include "seg.h"
-
 struct Seq_T {
 	uint32_t length, capacity;
-	Seg_T *contents;
+	void **contents;
 };
 
 typedef struct Seq_T *Seq_T;
@@ -17,15 +15,15 @@ typedef struct Seq_T *Seq_T;
 T Seq_new (uint32_t hint);
 void Seq_free (T *s);
 
-static Seg_T Seq_get (T s, uint32_t id);
-static void Seq_put (T s, uint32_t id, Seg_T seg);
+static void *Seq_get (T s, uint32_t id);
+static void Seq_put (T s, uint32_t id, void *seg);
 
-static void Seq_addhi (T s, Seg_T seg);
-static Seg_T Seq_remhi (T s);
+static void Seq_addhi (T s, void *seg);
+static void *Seq_remhi (T s);
 
 static uint32_t Seq_length (T s);
 
-static inline Seg_T Seq_get (T s, uint32_t id)
+static inline void *Seq_get (T s, uint32_t id)
 {
 	assert(s != NULL);
 	assert(s->contents != NULL);
@@ -33,7 +31,7 @@ static inline Seg_T Seq_get (T s, uint32_t id)
 	return s->contents[id];
 }
 
-static inline void Seq_put (T s, uint32_t id, Seg_T seg)
+static inline void Seq_put (T s, uint32_t id, void *seg)
 {
 	assert(s != NULL);
 	assert(s->contents != NULL);
@@ -51,7 +49,7 @@ static inline void resize (T s, uint32_t newsize) {
 	s->capacity = newsize;
 }
 
-static inline void Seq_addhi (T s, Seg_T seg)
+static inline void Seq_addhi (T s, void *seg)
 {
 	assert(s != NULL);
 	assert(s->contents != NULL);
@@ -63,7 +61,7 @@ static inline void Seq_addhi (T s, Seg_T seg)
 	s->contents[s->length++] = seg;
 }
 
-static inline Seg_T Seq_remhi (T s)
+static inline void *Seq_remhi (T s)
 {
 	assert(s != NULL);
 	assert(s->contents != NULL);

@@ -20,8 +20,7 @@ Machine_T machine_new () {
     return m;
 }
 
-void machine_load (Machine_T m, Seg_T seg0)
-{
+void machine_load (Machine_T m, Seg_T seg0) {
     assert(m != NULL);
     assert(seg0 != NULL);
 
@@ -53,8 +52,7 @@ void machine_run (Machine_T m) {
 
     Mem_T mem = m->mem;
     word *regs = m->regs;
-    Seg_T seg0_seg = mem_seg(m->mem, 0);
-    word *seg0 = seg0_seg->contents;
+    word *seg0 = Seq_get(mem->segs, 0)->contents;
 
     /* Instruction pointer. */
     word ip = 0;
@@ -94,8 +92,7 @@ void machine_run (Machine_T m) {
                 word rb_val = regs[rb];
                 if (rb_val != 0) {
                     mem_dup(mem, rb_val);
-                    seg0_seg = mem_seg(mem, 0);
-                    seg0 = seg0_seg->contents;
+                    seg0 = Seq_get(mem->segs, 0)->contents;
                 }
 
                 ip = regs[rc];

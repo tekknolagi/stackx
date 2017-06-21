@@ -1,12 +1,33 @@
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "seq.h"
-
 #include "memory.h"
-#include "seg.h"
 
 static const int TABLE_RANDOM_HINT = 100000;
+
+inline Seg_T seg_new (word size, word id) {
+    /* calloc ensures every bit is 0 */
+    /* TODO: figure out why it needs 4 extra bytes */
+    Seg_T seg = calloc(1, sizeof * seg + (size + 1) * sizeof(word));
+    assert(seg != NULL);
+
+    seg->id = id;
+    seg->len = size;
+
+    return seg;
+}
+
+inline Seg_T seg_dup (Seg_T seg) {
+    assert(seg != NULL);
+
+    Seg_T duplicated = seg_new(seg->len, 0);
+    memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
+
+    return duplicated;
+}
+
 
 Mem_T mem_new (Seg_T seg0)
 {
@@ -64,7 +85,7 @@ word mem_map (Mem_T mem, word len)
         Seq_addhi(mem->segs, seg);
     }
     else {
-        memtable_set(mem->segs, id, seg);
+        Seq_put(mem->segs, id, seg);
     }
 
     return id;
@@ -76,8 +97,8 @@ void mem_unmap (Mem_T mem, word segid)
     assert(mem->segs != NULL);
     assert(mem->unmapped != NULL);
 
-    Seg_T seg = memtable_get(mem->segs, segid);
-    memtable_rem(mem->segs, segid);
+    Seg_T seg = Seq_get(mem->segs, segid);
+    Seq_put(mem->segs, segid, NULL);
     free(seg);
 
     /*
