@@ -1,11 +1,8 @@
 all: memory.o machine.o um.o seq.o
-	gcc -o um memory.o machine.o um.o seq.o
-
-memory.o: memory.c
-	gcc -c memory.c
+	gcc -g3 -O3 -DNDEBUG -o um memory.o machine.o um.o seq.o
 
 %.o: %.c
-	gcc -c $<
+	gcc -g3 -O3 -DNDEBUG -c $<
 
 clean:
 	rm -f *.o um

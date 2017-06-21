@@ -42,14 +42,14 @@ static inline word mem_load (T mem, word segid, word off) {
     assert(mem != NULL);
     assert(mem->segs != NULL);
 
-    return Seq_get(mem->segs, segid)->contents[off];
+    return ((Seg_T) Seq_get(mem->segs, segid))->contents[off];
 }
 
 static inline void mem_store (T mem, word segid, word off, word val) {
     assert(mem != NULL);
     assert(mem->segs != NULL);
 
-    Seq_get(mem->segs, segid)->contents[off] = val;
+    ((Seg_T) Seq_get(mem->segs, segid))->contents[off] = val;
 }
 
 static inline void mem_dup (Mem_T mem, word segid) {
