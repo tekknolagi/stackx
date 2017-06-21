@@ -82,7 +82,7 @@ static inline void mem_dup (Mem_T mem, word segid)
 
     Seg_T duplicated = seg_dup(memtable_get(mem->segs, segid));
     Seg_T seg0 = memtable_get(mem->segs, 0);
-    seg_free(&seg0);
+    free(seg0);
 
     memtable_set(mem->segs, 0, duplicated);
 }

@@ -19,7 +19,6 @@ typedef struct seg *Seg_T;
 
 static T seg_new (word size, word id);
 static T seg_dup (T seg);
-static void seg_free (T *s);
 
 static inline T seg_new (word size, word id) {
     /* calloc ensures every bit is 0 */
@@ -40,13 +39,6 @@ static inline T seg_dup (T seg) {
     memcpy(duplicated->contents, seg->contents, seg->len * sizeof(word));
 
     return duplicated;
-}
-
-static inline void seg_free (T *seg) {
-    assert(seg != NULL);
-
-    free(*seg);
-    *seg = NULL;
 }
 
 #undef T
