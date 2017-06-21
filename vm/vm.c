@@ -1,37 +1,74 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
-#include "machine.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-struct machine {
-    word regs[NUM_REGS];
-    Mem_T mem;
-};
+#include "word.h"
+#include "memory.h"
 
-Machine_T machine_new () {
-    Machine_T m = calloc(1, sizeof *m);
-    assert(m != NULL);
+enum ops { CMOV = 0, SLOAD, SSTORE, ADD, MULT, DIV, NAND, HALT,
+           MAP, UNMAP, OUT, IN, LOADP, LOADV, NUM_OPS };
 
-    /* Set all the registers to 0. */
-    memset(m->regs, 0, NUM_REGS * sizeof(word));
+enum regs { R0 = 0, R1, R2, R3, R4, R5, R6, R7, NUM_REGS };
 
-    return m;
-}
+#define OP_WIDTH 4
+#define OP_LSB (32 - OP_WIDTH)
+#define REG_WIDTH 3
+#define VAL_WIDTH (32 - OP_WIDTH - REG_WIDTH)
+#define VAL_LSB 0
 
-void machine_load (Machine_T m, Seg_T seg0) {
-    assert(m != NULL);
-    assert(seg0 != NULL);
+/* 4 bits */
+#define INSTR_MASK 0xF
 
-    m->mem = mem_new(seg0);
-}
+/* 3 bits */
+#define REG_MASK 07U
 
-void machine_run (Machine_T m) {
-    assert(m != NULL);
+/* 25 bits */
+#define VAL_MASK 0x1FFFFFF
 
-    Mem_T mem = m->mem;
-    word *regs = m->regs;
+Seg_T fileio_read (char *fn);
+
+int main (int argc, char **argv) {
+    (void)argc;
+
+    char *fn = argv[1];
+    FILE *fp = fopen(fn, "rb");
+    assert(fp != NULL);
+
+    struct stat fp_info;
+    int success = stat(fn, &fp_info);
+    assert(success == 0);
+
+    Seg_T prog = seg_new(fp_info.st_size / sizeof(word), 0);
+    word ind = 0;
+
+    while (feof(fp) == 0) {
+        /* Four byte array. */
+        unsigned char current_word_chars[4];
+
+        /* Read the bytes in backwards. Because endian-ness. */
+        int nread = 0;
+        nread += fread(&current_word_chars[3], 1, 1, fp);
+        nread += fread(&current_word_chars[2], 1, 1, fp);
+        nread += fread(&current_word_chars[1], 1, 1, fp);
+        nread += fread(&current_word_chars[0], 1, 1, fp);
+        assert(nread == 4);
+
+        /* Since arrays are contiguous, we can interpret the
+           four-byte char array as one 32-bit word. */
+        word current_word = *(word *) current_word_chars;
+        prog->contents[ind++] = current_word;
+    }
+
+    fclose(fp);
+
+    word regs[NUM_REGS] = { 0 };
+    Mem_T mem = mem_new(prog);
+
     Seg_T seg0_seg = Seq_get(mem->segs, 0);
     word *seg0 = seg0_seg->contents;
 
@@ -126,13 +163,8 @@ void machine_run (Machine_T m) {
             }
         }
     }
-}
 
-void machine_free (Machine_T *m) {
-    assert(m != NULL);
-    assert(*m != NULL);
+    mem_free(&mem);
 
-    mem_free(&(*m)->mem);
-    free(*m);
-    *m = NULL;
+    return 0;
 }

@@ -1,5 +1,5 @@
-um
+vm
 asm
 *.o
-*.um*
+*.vm*
 *.orig
