@@ -52,6 +52,7 @@ let statements = [
   "a = 2 + 3;"               , Exp (SetEq ("a", (InfixOper (Plus, IntLit 2, IntLit 3))));
   "let a : int * = &3;"      , Let (LLet, ("a", Pointer (Prim Int)), (Ref (IntLit 3)));
   "let a : int * = 3;"       , Let (LLet, ("a", Pointer (Prim Int)), (IntLit 3));
+  "while (3 && 4) { 4; }"    , While (InfixOper (And, IntLit 3, IntLit 4), [Exp (IntLit 4)]);
 ]
 
 let programs = [
@@ -78,6 +79,8 @@ let check_pass = [
     [typecheck];
   (func_s "let a : bool = true; if (true) { let a : int = 5; }"),
     [typecheck];
+  (func_s "while (3 < 4) { 4; }"),
+    [typecheck];
 ]
 
 let check_fail = [
@@ -90,6 +93,7 @@ let check_fail = [
   (func_s "let a : int * = 3;"), typecheck;
   (func_s "let a : int = 4; !a;"), typecheck;
   (func_s "let a : bool = true; let a : int = 5;"), typecheck;
+  (func_s "while (3) { 4; }"), typecheck;
 ]
 
 let () = (

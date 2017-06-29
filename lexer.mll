@@ -15,6 +15,7 @@ rule token = parse
   | "if"           { KIf }
   | "else"         { KElse }
   | "void"         { TVoid }
+  | "while"        { KWhile }
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }

@@ -77,6 +77,7 @@ module AST = struct
     | Let of lettype * var * exp
     | If of exp * statement list
     | IfElse of exp * statement list * statement list
+    | While of exp * statement list
     | Return of exp
     | Exp of exp
   let rec string_of_statement = function
@@ -86,6 +87,7 @@ module AST = struct
         "if (" ^ string_of_exp cond ^ ") " ^ string_of_block iftrue
     | IfElse (cond, iftrue, iffalse) ->
         string_of_statement (If (cond, iftrue)) ^ " else " ^ string_of_block iffalse
+    | While (e, b) -> "while (" ^ string_of_exp e ^ ")" ^ string_of_block b
     | Return e -> "return " ^ string_of_exp e ^ ";"
     | Exp e -> string_of_exp e ^ ";"
   and string_of_block block =

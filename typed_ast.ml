@@ -92,6 +92,13 @@ module Typed_AST = struct
           | _ -> raise @@ TypeMismatch "if condition must have type bool")
       | If (cond, iftrue) ->
           check_statement t (Varenv.newframe tyenv) (IfElse (cond, iftrue, []))
+      | While (cond, block) ->
+          if type_of tyenv cond <> Prim Ast.Type.Bool
+          then raise @@ TypeMismatch "while condition must have type bool"
+          else (
+            ignore @@ List.fold_left (check_statement t) (Varenv.newframe tyenv) block;
+            tyenv
+            )
       | Exp e ->
           (ignore @@ type_of tyenv e; tyenv)
     in

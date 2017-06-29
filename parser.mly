@@ -6,7 +6,7 @@
 %token PLUS MINUS STAR DIV
 %token LT LTE GT GTE EQ NOT NEQ
 %token OR AND
-%token KFor KFunc KReturn KConst KLet KIf KElse
+%token KFor KFunc KReturn KConst KLet KIf KElse KWhile
 %token TVoid TInt TString TBool TChar
 %token LPAREN RPAREN
 %token LCURLY RCURLY
@@ -43,6 +43,7 @@ statement:
   | KLet variable_decl EQUALS exp SEMICOLON     { Ast.AST.(Let (LLet, $2, $4)) }
   | KConst variable_decl EQUALS exp SEMICOLON   { Ast.AST.(Let (LConst, $2, $4)) }
   | if_statement                                { $1 }
+  | KWhile LPAREN exp RPAREN block              { Ast.AST.(While ($3, $5)) }
   | KReturn exp SEMICOLON                       { Ast.AST.Return $2 }
 ;
 
