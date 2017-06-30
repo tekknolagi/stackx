@@ -35,7 +35,7 @@ module AST0 = struct
     | If (cond, iftrue, iffalse) ->
         "if (" ^ string_of_reg cond ^ ") {\n" ^ String.concat "\n" (List.map
         string_of_command iftrue) ^ "\n} else {\n" ^ String.concat "\n" (List.map
-        string_of_command iffalse) ^ "}"
+        string_of_command iffalse) ^ "\n}"
     | Call (f, args) ->
         "call " ^ string_of_reg f ^ "(" ^ String.concat "," (List.map
         string_of_reg args) ^ ")"
