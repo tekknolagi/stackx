@@ -9,8 +9,10 @@ import (
 	"os"
 )
 
+type Op int
+
 const (
-	CMOV = iota
+	CMOV Op = iota
 	SLOAD
 	SSTORE
 	ADD
@@ -35,7 +37,7 @@ func run(program []uint32) {
 
 	for {
 		instruction := platters[0][pc]
-		op := (instruction >> 28) & 15
+		op := Op((instruction >> 28) & 15)
 		a := ((instruction >> 6) & 7)
 		b := ((instruction >> 3) & 7)
 		c := ((instruction >> 0) & 7)
@@ -120,7 +122,7 @@ func check(err error) {
 func decompile(program []uint32) {
 	for i := range program {
 		instruction := program[i]
-		op := (instruction >> 28) & 15
+		op := Op((instruction >> 28) & 15)
 		a := ((instruction >> 6) & 7)
 		b := ((instruction >> 3) & 7)
 		c := ((instruction >> 0) & 7)
