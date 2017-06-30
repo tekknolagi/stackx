@@ -1,11 +1,13 @@
-## Prerequisites
+## Draft VM in Go
+
+### Prerequisites
 
 ```
 go get golang.org/x/tools/cmd/stringer
 stringer -type Op op.go
 ```
 
-## Build
+### Build
 
 ```
 go build -o um *.go
