@@ -9,6 +9,23 @@ import (
 	"os"
 )
 
+const (
+	CMOV = iota
+	SLOAD
+	SSTORE
+	ADD
+	MULT
+	DIV
+	NAND
+	HALT
+	MAP
+	UNMAP
+	OUTPUT
+	INPUT
+	LOADP
+	LOADV
+)
+
 func run(program []uint32) {
 
 	reg := [8]uint32{0, 0, 0, 0, 0, 0, 0, 0}
@@ -23,25 +40,25 @@ func run(program []uint32) {
 		b := ((instruction >> 3) & 7)
 		c := ((instruction >> 0) & 7)
 		switch op {
-		case 0:
+		case CMOV:
 			if reg[c] != 0 {
 				reg[a] = reg[b]
 			}
-		case 1:
+		case SLOAD:
 			reg[a] = platters[reg[b]][reg[c]]
-		case 2:
+		case SSTORE:
 			platters[reg[a]][reg[b]] = reg[c]
-		case 3:
+		case ADD:
 			reg[a] = reg[b] + reg[c]
-		case 4:
+		case MULT:
 			reg[a] = reg[b] * reg[c]
-		case 5:
+		case DIV:
 			reg[a] = reg[b] / reg[c]
-		case 6:
+		case NAND:
 			reg[a] = ^(reg[b] & reg[c])
-		case 7:	
+		case HALT:
 			return
-		case 8:
+		case MAP:
 			{
 				newPlatter := make([]uint32, reg[c])
 				if len(freePlatters) > 0 {
@@ -53,21 +70,21 @@ func run(program []uint32) {
 					reg[b] = uint32(len(platters) - 1)
 				}
 			}
-		case 9:
+		case UNMAP:
 			{
 				platters[reg[c]] = nil
 				freePlatters = append(freePlatters, reg[c])
 			}
-		case 10:
+		case OUTPUT:
 			os.Stdout.Write([]byte{byte(reg[c])})
-		case 11:
+		case INPUT:
 			{
 				b := []byte{0}
 				_, err := os.Stdin.Read(b)
 				check(err)
 				reg[c] = uint32(b[0])
 			}
-		case 12:
+		case LOADP:
 			{
 				if reg[b] != 0 {
 					platters[0] = make([]uint32, len(platters[reg[b]]))
@@ -76,7 +93,7 @@ func run(program []uint32) {
 				pc = reg[c]
 				continue
 			}
-		case 13:
+		case LOADV:
 			reg[(instruction>>25)&7] = instruction & 0x01FFFFFF
 		default:
 			panic(fmt.Errorf("Failed on %d", op))
