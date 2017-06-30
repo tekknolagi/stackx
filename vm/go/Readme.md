@@ -1,7 +1,7 @@
 ## Prerequisites
 
 ```
-go get golang.org/x/tools/cmd/stringer  # prerequisite
+go get golang.org/x/tools/cmd/stringer
 stringer -type Op op.go
 ```
 
@@ -14,7 +14,8 @@ go build -o um *.go
 ### Run
 
 ```
-./um ../sandmark.umz  # run the given program
-./um -disassemble ../sandmark.umz  # look at the given program
-./um -rtl ../sandmark.umz  # RTL-like semantics for the given program
+./um  # usage message
+./um ../sandmark.umz
+./um -disassemble ../sandmark.umz
+./um -rtl ../sandmark.umz
 ```
