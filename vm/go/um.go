@@ -9,26 +9,6 @@ import (
 	"os"
 )
 
-type Op int
-
-//go:generate stringer -type=Op
-const (
-	CMOV Op = iota
-	SLOAD
-	SSTORE
-	ADD
-	MULT
-	DIV
-	NAND
-	HALT
-	MAP
-	UNMAP
-	OUTPUT
-	INPUT
-	LOADP
-	LOADV
-)
-
 func run(program []uint32) {
 	reg := [8]uint32{0, 0, 0, 0, 0, 0, 0, 0}
 	platters := [][]uint32{program}
@@ -208,11 +188,16 @@ func main() {
 	printRTL := flag.Bool("rtl", false, "Print RTL semantics for instructions instead of running or disassembling.")
 	flag.Parse()
 
-	if len(flag.Args()) == 0 {
+	flag.Usage = func() {
 		fmt.Println("Usage:")
-		fmt.Println("  um [file]")
-		fmt.Println("  um -disassemble [file]")
-		fmt.Println("  um -rtl [file]")
+		fmt.Println("  um [flag] <file>")
+		fmt.Println("Flags:")
+		flag.PrintDefaults()
+	}
+
+	if len(flag.Args()) == 0 {
+		fmt.Println("a program file is required")
+		flag.Usage()
 		return
 	}
 

@@ -1,0 +1,3 @@
+go get golang.org/x/tools/cmd/stringer
+stringer -type Op op.go
+go build -o um *.go
