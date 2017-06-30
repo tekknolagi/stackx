@@ -162,9 +162,14 @@ func decompile(program []uint32) {
 }
 
 func main() {
-	program := flag.String("program", "sandmark.umz", "The program to run on the Universal Machine.")
+	program := flag.String("program", "", "The program to run on the Universal Machine.")
 	decomp := flag.Bool("decompile", false, "Decompile instead of execute.")
 	flag.Parse()
+
+	if *program == "" {
+		fmt.Printf("Usage:\n  um -program [file]\n  um -decompile -program [file]\n")
+		return
+	}
 
 	platters := readPlatters(*program)
 
