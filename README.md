@@ -20,5 +20,12 @@ See [tests.ml](tests.ml) to see what the binary does.
 
 1. `make clean` and `make`
 2. `ocaml` or `utop`
-3. `./shell` -- keep in mind that this only accepts full programs as input, and
-   each only on one line
+3. `./shell ast` -- keep in mind that this only accepts full programs as input,
+   and each only on one line
+
+### In order to see lowered code output in console:
+
+1. `make clean` and `make`
+2. `ocaml` or `utop`
+3. `./shell lower` -- keep in mind that this only accepts full programs as
+   input, and each only on one line

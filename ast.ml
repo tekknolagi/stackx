@@ -63,8 +63,8 @@ module AST = struct
         "((" ^ string_of_exp e1 ^ ") "
         ^ string_of_op o ^
         " (" ^ string_of_exp e2 ^ "))"
-    | Funcall (n, es) ->
-        "Funcall (" ^ string_of_exp n ^ ", "
+    | Funcall (f, es) ->
+        "Funcall (" ^ string_of_exp f ^ ", "
         ^ (String.concat "," @@ List.map string_of_exp es) ^ ")"
     | SetEq (n, e) -> "SetEq (" ^ n ^ ", " ^ string_of_exp e ^ ")"
 

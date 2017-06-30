@@ -18,9 +18,12 @@ module AST0 = struct
     | Binop of reg * binop * reg * reg 
     | Unop of reg * unop * reg
     | Mov of reg * reg
+    | If of reg * command list * command list
+    | Call of reg * reg list
+    | Label of string
 
   let set r = string_of_reg r ^ " <- "
-  let string_of_command = function
+  let rec string_of_command = function
     | Load (dst, l) ->
         set dst ^ string_of_lit l
     | Binop (dst, o, r1, r2)  ->
@@ -29,18 +32,31 @@ module AST0 = struct
         set dst ^ string_of_unop o ^ string_of_reg r
     | Mov (dst, src) ->
         set dst ^ string_of_reg src
+    | If (cond, iftrue, iffalse) ->
+        "if (" ^ string_of_reg cond ^ ") {" ^ String.concat "\n" (List.map
+        string_of_command iftrue) ^ "} else {\n" ^ String.concat "\n" (List.map
+        string_of_command iffalse) ^ "}"
+    | Call (f, args) ->
+        "call " ^ string_of_reg f ^ "(" ^ String.concat "," (List.map
+        string_of_reg args) ^ ")"
+    | Label n -> n ^ ":"
+
+  let string_of_program p =
+    String.concat "\n" (List.map string_of_command p)
 
   let num = ref 0
   let next () = let i = !num in let () = num := !num + 1 in R i
 
+  open Ast.AST
+
   let rec lower_exp exp env =
-    let open Ast.AST in
     let to_unop = function
       | Not -> `Not
       | Plus -> `Plus
       | Minus -> `Minus
       | _ -> failwith "unsupported unary operator"
     in
+    let lower e = lower_exp e env in
     match exp with
     | IntLit i ->
         let r = next () in
@@ -51,25 +67,69 @@ module AST0 = struct
     | Var n ->
         Varenv.assoc n env, []
     | InfixOper (op, e1, e2) ->
-        let (r1, code1) = lower_exp e1 env in
-        let (r2, code2) = lower_exp e2 env in
+        let (r1, code1) = lower e1 in
+        let (r2, code2) = lower e2 in
         let res = next () in
         res, code1 @ code2 @ [Binop (res, op, r1, r2)]
     | PrefixOper (op, e) ->
-        let (r, code) = lower_exp e env in
+        let (r, code) = lower e in
         let res = next () in
         res, code @ [Unop (res, to_unop op, r)]
     | Ref e ->
-        let (r, code) = lower_exp e env in
+        let (r, code) = lower e in
         let res = next () in
         res, code @ [Unop (res, `Ref, r)]
     | Deref e ->
-        let (r, code) = lower_exp e env in
+        let (r, code) = lower e in
         let res = next () in
         res, code @ [Unop (res, `Deref, r)]
     | SetEq (n, e) ->
-        let (r, code) = lower_exp e env in
+        let (r, code) = lower e in
         let nr = Varenv.assoc n env in
         nr, code @ [Mov (nr, r)]
-    | _ -> failwith "unsupported"
+    | Funcall (f, es) ->
+        let (fr, fcode) = lower f in
+        let rs_codes = List.map lower es in
+        let (ers, ecodes) = (List.map fst rs_codes, List.map snd rs_codes) in
+        fr, fcode @ (List.concat ecodes) @ [Call (fr, ers)]
+
+  let rec lower_stmt stmt env =
+    match stmt with
+    | Let (_, (n, _), e) ->
+      let (r, code) = lower_exp e env in
+      (Varenv.bind n r env), code
+    | IfElse (cond, iftrue, iffalse) ->
+        let (cr, ccode) = lower_exp cond env in
+        let (env', tcode) = lower_block iftrue env in
+        let (env', fcode) = lower_block iffalse env in
+        env, ccode @ tcode @ fcode
+    | If (cond, iftrue) -> lower_stmt (IfElse (cond, iftrue, [])) env
+    | Exp e -> let (_, ecode) = lower_exp e env in env, ecode
+    | _ -> failwith "unimplemented"
+
+  and lower_block block env =
+    let f (env, code) stmt =
+      let (env', code') = lower_stmt stmt env in
+      env', code@code'
+    in
+    List.fold_left f (Varenv.newframe env, []) block
+
+
+  let rec lower_topdef def env =
+    match def with
+    | Const ((n, _), e) ->
+        let (r, code) = lower_exp e env in
+        (Varenv.bind n r env), code
+    | Fun (n, formals, _, body) ->
+        let (_, bodycode) = lower_block body env in
+        (* TODO: This is wrong. Fix it. *)
+        (* Doesn't handle parameters at all. *)
+        env, (Label n)::bodycode
+
+  let lower_prog (Prog defs) =
+    let f (env, code) def =
+      let (env', code') = lower_topdef def env in
+      env', code@code'
+    in
+    List.fold_left f (Varenv.empty, []) defs
 end

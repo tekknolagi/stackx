@@ -14,5 +14,21 @@ let rec shell () =
   print_endline @@ read @@ input_line stdin;
   shell ()
 
+let rec lowershell () =
+  let open Ast0.AST0 in
+  print_string "> ";
+  flush stdout;
+  let (e, l) = lower_prog @@ parse @@ input_line stdin in
+  print_endline @@ string_of_program @@ l;
+  lowershell ()
+
 let () =
-  shell ()
+  if Array.length Sys.argv > 1 then
+    if Sys.argv.(1) = "lower" then
+      lowershell ()
+    else if Sys.argv.(1) = "ast" then
+      shell ()
+    else
+      failwith "unknown shell"
+  else
+    failwith "no shell given"
