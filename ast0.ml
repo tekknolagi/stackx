@@ -13,13 +13,17 @@ module AST0 = struct
     | `Deref -> "*"
   type reg = R of int
   let string_of_reg (R i) = "r" ^ string_of_int i
+  type callable = Name of string | Address of reg
+  let string_of_callable = function
+    | Name n -> n
+    | Address r -> "(" ^ string_of_reg r ^ ")"
   type command =
     | Load of reg * lit
     | Binop of reg * binop * reg * reg 
     | Unop of reg * unop * reg
     | Mov of reg * reg
     | If of reg * command list * command list
-    | Call of reg * reg list
+    | Call of callable * reg list
     | Label of string
 
   let set r = string_of_reg r ^ " <- "
@@ -37,7 +41,7 @@ module AST0 = struct
         string_of_command iftrue) ^ "\n} else {\n" ^ String.concat "\n" (List.map
         string_of_command iffalse) ^ "\n}"
     | Call (f, args) ->
-        "call " ^ string_of_reg f ^ "(" ^ String.concat "," (List.map
+        "call " ^ string_of_callable f ^ "(" ^ String.concat "," (List.map
         string_of_reg args) ^ ")"
     | Label n -> n ^ ":"
 
@@ -87,11 +91,15 @@ module AST0 = struct
         let (r, code) = lower e in
         let nr = Varenv.assoc n env in
         nr, code @ [Mov (nr, r)]
+    | Funcall (Var n, es) ->
+        let rs_codes = List.map lower es in
+        let (ers, ecodes) = (List.map fst rs_codes, List.map snd rs_codes) in
+        next (), (List.concat ecodes) @ [Call (Name n, ers)]
     | Funcall (f, es) ->
         let (fr, fcode) = lower f in
         let rs_codes = List.map lower es in
         let (ers, ecodes) = (List.map fst rs_codes, List.map snd rs_codes) in
-        fr, fcode @ (List.concat ecodes) @ [Call (fr, ers)]
+        next (), fcode @ (List.concat ecodes) @ [Call (Address fr, ers)]
 
   let rec lower_stmt stmt env =
     match stmt with
