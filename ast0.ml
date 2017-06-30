@@ -33,8 +33,8 @@ module AST0 = struct
     | Mov (dst, src) ->
         set dst ^ string_of_reg src
     | If (cond, iftrue, iffalse) ->
-        "if (" ^ string_of_reg cond ^ ") {" ^ String.concat "\n" (List.map
-        string_of_command iftrue) ^ "} else {\n" ^ String.concat "\n" (List.map
+        "if (" ^ string_of_reg cond ^ ") {\n" ^ String.concat "\n" (List.map
+        string_of_command iftrue) ^ "\n} else {\n" ^ String.concat "\n" (List.map
         string_of_command iffalse) ^ "}"
     | Call (f, args) ->
         "call " ^ string_of_reg f ^ "(" ^ String.concat "," (List.map
@@ -102,7 +102,7 @@ module AST0 = struct
         let (cr, ccode) = lower_exp cond env in
         let (env', tcode) = lower_block iftrue env in
         let (env', fcode) = lower_block iffalse env in
-        env, ccode @ tcode @ fcode
+        env, ccode @ [If (cr, tcode, fcode)]
     | If (cond, iftrue) -> lower_stmt (IfElse (cond, iftrue, [])) env
     | Exp e -> let (_, ecode) = lower_exp e env in env, ecode
     | _ -> failwith "unimplemented"
