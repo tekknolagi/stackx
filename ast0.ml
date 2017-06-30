@@ -19,7 +19,7 @@ module AST0 = struct
     | Address r -> "(" ^ string_of_reg r ^ ")"
   type command =
     | Load of reg * lit
-    | Binop of reg * binop * reg * reg 
+    | Binop of reg * binop * reg * reg
     | Unop of reg * unop * reg
     | Mov of reg * reg
     | If of reg * command list * command list
