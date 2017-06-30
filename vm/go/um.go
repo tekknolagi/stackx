@@ -11,6 +11,7 @@ import (
 
 type Op int
 
+//go:generate stringer -type=Op
 const (
 	CMOV Op = iota
 	SLOAD
@@ -29,7 +30,6 @@ const (
 )
 
 func run(program []uint32) {
-
 	reg := [8]uint32{0, 0, 0, 0, 0, 0, 0, 0}
 	platters := [][]uint32{program}
 	freePlatters := []uint32{}
@@ -119,7 +119,49 @@ func check(err error) {
 	}
 }
 
-func decompile(program []uint32) {
+func disassemble(program []uint32) {
+	for i := range program {
+		instruction := program[i]
+		op := Op((instruction >> 28) & 15)
+		a := ((instruction >> 6) & 7)
+		b := ((instruction >> 3) & 7)
+		c := ((instruction >> 0) & 7)
+		var text string
+		switch op {
+		case CMOV:
+			fallthrough
+		case SLOAD:
+			fallthrough
+		case SSTORE:
+			fallthrough
+		case ADD:
+			fallthrough
+		case MULT:
+			fallthrough
+		case DIV:
+			fallthrough
+		case NAND:
+			text = fmt.Sprintf("%s %%%d, %%%d, %%%d", op.String(), a, b, c)
+		case HALT:
+			text = fmt.Sprintf("%s", op.String())
+		case MAP:
+			fallthrough
+		case LOADP:
+			text = fmt.Sprintf("%s %%%d, %%%d", op.String(), b, c)
+		case LOADV:
+			text = fmt.Sprintf("%s %%%d, %x", op.String(), (instruction>>25)&7, instruction&0x01FFFFFFc)
+		case UNMAP:
+			fallthrough
+		case OUTPUT:
+			fallthrough
+		case INPUT:
+			text = fmt.Sprintf("%s %%%d", op.String(), c)
+		}
+		fmt.Printf("[%08x] %08x: %s\n", i, instruction, text)
+	}
+}
+
+func rtl(program []uint32) {
 	for i := range program {
 		instruction := program[i]
 		op := Op((instruction >> 28) & 15)
@@ -147,11 +189,11 @@ func decompile(program []uint32) {
 		case MAP:
 			text = fmt.Sprintf("REG[%d] = MALLOC(REG[%d])", b, c)
 		case UNMAP:
-			text = fmt.Sprintf("ABND %d", c)
+			text = fmt.Sprintf("FREE(REG[%d])", c)
 		case OUTPUT:
-			text = fmt.Sprintf("OTPT %d", c)
+			text = fmt.Sprintf("OUTPUT(REG[%d])", c)
 		case INPUT:
-			text = fmt.Sprintf("INPT %d", c)
+			text = fmt.Sprintf("REG[%d] = INPUT()", c)
 		case LOADP:
 			text = fmt.Sprintf("PLATTERS[0] = PLATTERS[REG[%d]]; GOTO REG[%d]", b, c)
 		case LOADV:
@@ -162,23 +204,24 @@ func decompile(program []uint32) {
 }
 
 func main() {
-	program := flag.String("program", "", "The program to run on the Universal Machine.")
-	decomp := flag.Bool("decompile", false, "Decompile instead of execute.")
+	printDisassembly := flag.Bool("disassemble", false, "Print instructions instead of running.")
+	printRTL := flag.Bool("rtl", false, "Print RTL semantics for instructions instead of running or disassembling.")
 	flag.Parse()
 
-	if *program == "" {
-		fmt.Printf("Usage:\n  um -program [file]\n  um -decompile -program [file]\n")
+	if len(flag.Args()) == 0 {
+		fmt.Println("Usage:")
+		fmt.Println("  um [file]")
+		fmt.Println("  um -disassemble [file]")
+		fmt.Println("  um -rtl [file]")
 		return
 	}
 
-	platters := readPlatters(*program)
-
-	// If -decompile, decompile the program instead of running
-	if *decomp {
-		decompile(platters)
-		return
+	platters := readPlatters(flag.Arg(0))
+	if *printDisassembly {
+		disassemble(platters)
+	} else if *printRTL {
+		rtl(platters)
+	} else {
+		run(platters)
 	}
-
-	// Else run
-	run(platters)
 }
