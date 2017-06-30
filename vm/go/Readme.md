@@ -17,7 +17,7 @@ go build -o um *.go
 
 ```shell
 ./um  # usage message
-./um ../sandmark.umz
-./um -disassemble ../sandmark.umz
-./um -rtl ../sandmark.umz
+./um ../hello.um
+./um -disassemble ../hello.um
+./um -rtl ../hello.um
 ```
