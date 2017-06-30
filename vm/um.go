@@ -126,33 +126,33 @@ func decompile(program []uint32) {
 		c := ((instruction >> 0) & 7)
 		var text string
 		switch op {
-		case 0:
+		case CMOV:
 			text = fmt.Sprintf("IF REG[%d] != 0 { REG[%d] = REG[%d] }", c, a, b)
-		case 1:
+		case SLOAD:
 			text = fmt.Sprintf("REG[%d] = PLATTERS[REG[%d]][REG[%d]]", a, b, c)
-		case 2:
+		case SSTORE:
 			text = fmt.Sprintf("PLATTERS[REG[%d]][REG[%d]] = REG[%d]", a, b, c)
-		case 3:
+		case ADD:
 			text = fmt.Sprintf("REG[%d] = REG[%d] + REG[%d]", a, b, c)
-		case 4:
+		case MULT:
 			text = fmt.Sprintf("REG[%d] = REG[%d] * REG[%d]", a, b, c)
-		case 5:
+		case DIV:
 			text = fmt.Sprintf("REG[%d] = REG[%d] / REG[%d]", a, b, c)
-		case 6:
+		case NAND:
 			text = fmt.Sprintf("REG[%d] = ^(REG[%d] & REG[%d])", a, b, c)
-		case 7:
+		case HALT:
 			text = fmt.Sprintf("HALT")
-		case 8:
+		case MAP:
 			text = fmt.Sprintf("REG[%d] = MALLOC(REG[%d])", b, c)
-		case 9:
+		case UNMAP:
 			text = fmt.Sprintf("ABND %d", c)
-		case 10:
+		case OUTPUT:
 			text = fmt.Sprintf("OTPT %d", c)
-		case 11:
+		case INPUT:
 			text = fmt.Sprintf("INPT %d", c)
-		case 12:
+		case LOADP:
 			text = fmt.Sprintf("PLATTERS[0] = PLATTERS[REG[%d]]; GOTO REG[%d]", b, c)
-		case 13:
+		case LOADV:
 			text = fmt.Sprintf("REG[%d] = %x", (instruction>>25)&7, instruction&0x01FFFFFFc)
 		}
 		fmt.Printf("[%08x] %08x: %s\n", i, instruction, text)
