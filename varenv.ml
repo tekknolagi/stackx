@@ -1,4 +1,6 @@
-type 'a env = (string * 'a) list list
+type 'a binding = string * 'a
+type 'a frame = 'a binding list
+type 'a env = 'a frame list
 
 let empty = []
 
@@ -17,3 +19,13 @@ let newframe env = []::env
 let bind n v = function
   | [] -> [[n,v]]
   | f::fs -> ((n,v)::f)::fs
+
+let rec zip xs ys =
+  match (xs, ys) with
+  | ([], []) -> []
+  | (x::xs, y::ys) -> (x,y) :: zip xs ys
+  | _ -> failwith "uneven"
+
+(* Makes new frame *)
+let bindlist ns vs env =
+  (zip ns vs) :: env

@@ -23,7 +23,10 @@ module AST0 = struct
     | Unop of reg * unop * reg
     | Mov of reg * reg
     | If of reg * command list * command list
-    | Call of callable * reg list
+    | Call of callable
+    | While of reg * command list * command list
+    | Push of reg (* Push a register onto the global stack. *)
+    | Pop of reg  (* Pop a value from the global stack into a register. *)
     | Label of string
 
   let set r = string_of_reg r ^ " <- "
@@ -40,16 +43,21 @@ module AST0 = struct
         "if (" ^ string_of_reg cond ^ ") {\n" ^ String.concat "\n" (List.map
         string_of_command iftrue) ^ "\n} else {\n" ^ String.concat "\n" (List.map
         string_of_command iffalse) ^ "\n}"
-    | Call (f, args) ->
-        "call " ^ string_of_callable f ^ "(" ^ String.concat "," (List.map
-        string_of_reg args) ^ ")"
+    | Call (f) ->
+        "call " ^ string_of_callable f
+    | While (cr, cond, body) ->
+        "while (" ^ string_of_reg cr ^ ") {\n" ^ String.concat "\n" (List.map
+        string_of_command cond) ^ "\n} | {\n" ^ String.concat "\n" (List.map
+        string_of_command body) ^ "\n}"
+    | Push r -> "push " ^ string_of_reg r
+    | Pop r -> "pop " ^ string_of_reg r
     | Label n -> n ^ ":"
 
   let string_of_program p =
     String.concat "\n" (List.map string_of_command p)
 
   let num = ref 0
-  let next () = let i = !num in let () = num := !num + 1 in R i
+  let next _ = let i = !num in let () = num := !num + 1 in R i
 
   open Ast.AST
 
@@ -91,15 +99,18 @@ module AST0 = struct
         let (r, code) = lower e in
         let nr = Varenv.assoc n env in
         nr, code @ [Mov (nr, r)]
-    | Funcall (Var n, es) ->
-        let rs_codes = List.map lower es in
-        let (ers, ecodes) = (List.map fst rs_codes, List.map snd rs_codes) in
-        next (), (List.concat ecodes) @ [Call (Name n, ers)]
     | Funcall (f, es) ->
-        let (fr, fcode) = lower f in
-        let rs_codes = List.map lower es in
-        let (ers, ecodes) = (List.map fst rs_codes, List.map snd rs_codes) in
-        next (), fcode @ (List.concat ecodes) @ [Call (Address fr, ers)]
+        let (ers, ecodes) = List.split @@ List.map lower es in
+        let pushes = List.map (fun x -> Push x) ers in
+        let argument_eval = (List.concat ecodes) @ pushes in
+        let ret = next () in
+        (match f with
+         | Var n ->
+             ret, argument_eval @ [Call (Name n); Pop ret]
+         | _ ->
+             let (fr, fcode) = lower f in
+             ret, fcode @ argument_eval @ [Call (Address fr); Pop ret]
+        )
 
   let rec lower_stmt stmt env =
     match stmt with
@@ -113,7 +124,13 @@ module AST0 = struct
         env, ccode @ [If (cr, tcode, fcode)]
     | If (cond, iftrue) -> lower_stmt (IfElse (cond, iftrue, [])) env
     | Exp e -> let (_, ecode) = lower_exp e env in env, ecode
-    | _ -> failwith "unimplemented"
+    | While (cond, body) ->
+        let (cr, ccode) = lower_exp cond env in
+        let (env', bcode) = lower_block body env in
+        env, [While (cr, ccode, bcode)]
+    | Return e ->
+        let (r, code) = lower_exp e env in
+        env, code @ [Push r]
 
   and lower_block block env =
     let f (env, code) stmt =
@@ -129,10 +146,12 @@ module AST0 = struct
         let (r, code) = lower_exp e env in
         (Varenv.bind n r env), code
     | Fun (n, formals, _, body) ->
-        let (_, bodycode) = lower_block body env in
-        (* TODO: This is wrong. Fix it. *)
-        (* Doesn't handle parameters at all. *)
-        env, (Label n)::bodycode
+        let formalnames = List.map fst formals in
+        let formalregs = List.map next formals in
+        let env' = Varenv.bindlist formalnames formalregs env in
+        let pops = List.map (fun x -> Pop x) formalregs in
+        let (_, bodycode) = lower_block body env' in
+        env, [Label n] @ pops @ bodycode
 
   let lower_prog (Prog defs) =
     let f (env, code) def =
