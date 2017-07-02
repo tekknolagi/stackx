@@ -42,6 +42,7 @@ module Typed_AST = struct
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
       | CharLit _ -> Prim Ast.Type.Char
+      | BoolLit _ -> Prim Ast.Type.Bool
       | Var n -> Varenv.assoc n tyenv
       | Ref e -> Pointer (ty e)
       | Deref e ->

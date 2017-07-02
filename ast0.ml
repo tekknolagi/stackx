@@ -1,8 +1,9 @@
 module AST0 = struct
-  type lit = IntLit of int | CharLit of char
+  type lit = IntLit of int | CharLit of char | BoolLit of bool
   let string_of_lit = function
     | IntLit i -> string_of_int i ^ "i"
     | CharLit c -> "'" ^ Char.escaped c ^ "'"
+    | BoolLit b -> string_of_bool b ^ "b"
   type binop = Ast.AST.op
   type unop = [ `Not | `Plus | `Minus | `Ref | `Deref ]
   let string_of_unop = function
@@ -76,6 +77,9 @@ module AST0 = struct
     | CharLit c ->
         let r = next () in
         r, [ Load (r, CharLit c) ]
+    | BoolLit b ->
+        let r = next () in
+        r, [ Load (r, BoolLit b) ]
     | Var n ->
         Varenv.assoc n env, []
     | InfixOper (op, e1, e2) ->
@@ -138,7 +142,6 @@ module AST0 = struct
       env', code@code'
     in
     List.fold_left f (Varenv.newframe env, []) block
-
 
   let rec lower_topdef def env =
     match def with

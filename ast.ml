@@ -44,6 +44,7 @@ module AST = struct
   type exp =
     | IntLit of int
     | CharLit of char
+    | BoolLit of bool
     | Var of name
     | Ref of exp
     | Deref of exp
@@ -54,6 +55,7 @@ module AST = struct
   let rec string_of_exp = function
     | IntLit i -> "IntLit " ^ string_of_int i
     | CharLit c -> "CharLit " ^ String.make 1 c
+    | BoolLit b -> "BoolLit " ^ string_of_bool b
     | Var n -> "Var \"" ^ n ^ "\""
     | Ref e -> "Ref (" ^ string_of_exp e ^ ")"
     | Deref e -> "Deref (" ^ string_of_exp e ^ ")"
