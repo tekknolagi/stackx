@@ -108,3 +108,59 @@ module AST = struct
     String.concat "\n" @@ List.map string_of_toplevel_def defs
   type t = program
 end
+
+let const_eval defs =
+  let open AST in
+  let binint = function
+    | Plus -> (+)
+    | Minus -> (-)
+    | Times -> ( * )
+    | Div -> (/)
+    | _ -> failwith "can't happen 0"
+  in
+  let binbool = function
+    | Lt -> (<)
+    | Gt -> (>)
+    | Lte -> (<=)
+    | Gte -> (>=)
+    | And -> (&&)
+    | Or -> (||)
+    | _ -> failwith "can't happen 1"
+  in
+  let rec evexp env = function
+    | IntLit i -> IntLit i
+    | CharLit c -> CharLit c
+    | BoolLit b -> BoolLit b
+    | Var n -> Varenv.assoc n env
+    | PrefixOper (Plus, e) -> evexp env e
+    | PrefixOper (Minus, e) ->
+        (match evexp env e with
+         | IntLit i -> IntLit (0-i)
+         | _ -> failwith "can't happen 2"
+        )
+    | PrefixOper (Not, e) ->
+        (match evexp env e with
+         | BoolLit b -> BoolLit (not b)
+         | _ -> failwith "can't happen 3"
+         )
+    | PrefixOper _ -> failwith "unsupported"
+    | InfixOper (op, e1, e2) ->
+        (match (evexp env e1, evexp env e2) with
+         | (IntLit i1, IntLit i2) -> IntLit ((binint op) i1 i2)
+         | (BoolLit b1, BoolLit b2) -> BoolLit ((binbool op) b1 b2)
+         | _ -> failwith "can't happen"
+        )
+    | Ref _ | Deref _ -> failwith "cannot ref/deref in toplevel const"
+    | Funcall _ -> failwith "cannot funcall in toplevel const"
+    | SetEq _ -> failwith "cannot seteq in toplevel const"
+  in
+  let evdef env = function
+    | Const ((n,t), e) ->
+        let v = evexp env e in
+        (Varenv.bind n v env), Const ((n, t), v)
+    | x -> env, x
+  in
+  let constenv =
+    List.fold_left (fun env cur -> fst @@ evdef env cur) Varenv.empty defs
+  in
+  List.map (fun def -> snd @@ evdef constenv def) defs

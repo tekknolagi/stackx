@@ -161,5 +161,5 @@ module AST0 = struct
       let (env', code') = lower_topdef def env in
       env', code@code'
     in
-    List.fold_left f (Varenv.empty, []) defs
+    List.fold_left f (Varenv.empty, []) (Ast.const_eval defs)
 end
