@@ -116,8 +116,6 @@ module Typed_AST = struct
           Varenv.bind n (Arrow ((List.map snd formals) @ [t])) tyenv
     in
     let basis = Ast.Type.([[
-      "true", Prim Bool;
-      "false", Prim Bool;
       "+", Arrow [Prim Int; Prim Int; Prim Int];
       "-", Arrow [Prim Int; Prim Int; Prim Int];
       "u-", Arrow [Prim Int; Prim Int];
