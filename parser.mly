@@ -6,14 +6,14 @@
 %token PLUS MINUS STAR DIV
 %token LT LTE GT GTE EQ NOT NEQ
 %token OR AND
-%token KFor KFunc KReturn KConst KLet KIf KElse KWhile
+%token KFor KFunc KReturn KConst KLet KIf KElse KWhile KTrue KFalse
 %token TVoid TInt TString TBool TChar
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
 %token COMMA
 %token EQUALS
-%token EOL EOF
+%token EOF
 
 %start main             /* the entry point */
 %type <Ast.AST.t> main
@@ -117,6 +117,8 @@ call_exp:
 literal:
   | INT                  { Ast.AST.IntLit $1 }
   | CHAR                 { Ast.AST.CharLit $1 }
+  | KTrue                { Ast.AST.BoolLit true }
+  | KFalse               { Ast.AST.BoolLit false }
   | VAR                  { Ast.AST.Var $1 }
   | LPAREN exp RPAREN    { $2 }
 ;

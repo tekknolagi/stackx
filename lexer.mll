@@ -6,7 +6,6 @@ exception Eof
 
 rule token = parse
     [' ' '\t']     { token lexbuf }     (* skip blanks *)
-  | ['\n' ]        { EOL }
   | "for"          { KFor }
   | "func"         { KFunc }
   | "return"       { KReturn }
@@ -14,8 +13,10 @@ rule token = parse
   | "let"          { KLet }
   | "if"           { KIf }
   | "else"         { KElse }
-  | "void"         { TVoid }
   | "while"        { KWhile }
+  | "true"         { KTrue }
+  | "false"        { KFalse }
+  | "void"         { TVoid }
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }

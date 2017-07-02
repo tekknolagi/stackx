@@ -3,7 +3,7 @@ module AST0 = struct
   let string_of_lit = function
     | IntLit i -> string_of_int i ^ "i"
     | CharLit c -> "'" ^ Char.escaped c ^ "'"
-    | BoolLit b -> string_of_bool b ^ "b"
+    | BoolLit b -> string_of_bool b
   type binop = Ast.AST.op
   type unop = [ `Not | `Plus | `Minus | `Ref | `Deref ]
   let string_of_unop = function
