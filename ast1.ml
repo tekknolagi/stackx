@@ -32,6 +32,8 @@ module AST1 = struct
     | SUB of op3
     | MULT of op3
     | DIV of op3
+    | LT of op3
+    | GT of op3
     | NAND of op3
     | MOV of op2
     | HALT
@@ -54,6 +56,8 @@ module AST1 = struct
     | SUB o -> "SUB " ^ string_of_op3 o
     | MULT o -> "MULT " ^ string_of_op3 o
     | DIV o -> "DIV " ^ string_of_op3 o
+    | LT o -> "LT " ^ string_of_op3 o
+    | GT o -> "GT " ^ string_of_op3 o
     | NAND o -> "NAND " ^ string_of_op3 o
     | MOV o -> "MOV " ^ string_of_op2 o
     | HALT -> "HALT"
@@ -81,7 +85,7 @@ module AST1 = struct
       MAP (stack, R 1);
       LOADV (sp, 0);
       JUMP "main";
-  ] @ lower_block p
+    ] @ lower_block p @ [UNMAP stack; HALT]
   and lower_block b = List.concat @@ List.map lower_command b
   and lower_command = function
     | Label s -> [LABEL s]
@@ -93,6 +97,8 @@ module AST1 = struct
     | Binop (dst, Ast.AST.Minus, r1, r2) -> [SUB (dst, r1, r2)]
     | Binop (dst, Ast.AST.Times, r1, r2) -> [MULT (dst, r1, r2)]
     | Binop (dst, Ast.AST.Div, r1, r2) -> [DIV (dst, r1, r2)]
+    | Binop (dst, Ast.AST.Lt, r1, r2) -> [LT (dst, r1, r2)]
+    | Binop (dst, Ast.AST.Gt, r1, r2) -> [GT (dst, r1, r2)]
     | Binop (_, _, _, _) -> failwith "unimplemented binary op in ast1"
     | Unop (dst, `Not, r1) -> [NAND (dst, r1, r1)]
     | Mov (dst, r1) -> [MOV (dst, r1)]
@@ -109,4 +115,14 @@ module AST1 = struct
     | Call (Address a) -> [JUMPA a]
     | Push r -> [SSTORE (stack, sp, r); INC sp]
     | Pop r -> [DEC sp; SLOAD (stack, sp, r)]
+    | While (cr, ccode, bcode) ->
+        let condlbl = nextlbl () in
+        let cblock = lower_block ccode in
+        let bodylbl = nextlbl () in
+        let bblock = lower_block bcode in
+        let endlbl = nextlbl () in
+        (mklbl condlbl)::cblock
+        @ [CJUMP (cr, bodylbl); JUMP (string_of_label endlbl); mklbl bodylbl]
+        @ bblock
+        @ [JUMP (string_of_label condlbl); mklbl endlbl]
 end

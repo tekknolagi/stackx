@@ -74,13 +74,18 @@ module AST0 = struct
         r, [ Load (r, BoolLit b) ]
     | Var n ->
         Varenv.assoc n env, []
+    | InfixOper (Gte, e1, e2) ->
+        lower_exp (InfixOper (Or, (InfixOper (Gt, e1, e2)),
+                                  (InfixOper (Eq, e1, e2)))) env
+    | InfixOper (Lte, e1, e2) ->
+        lower_exp (InfixOper (Or, (InfixOper (Lt, e1, e2)),
+                                  (InfixOper (Eq, e1, e2)))) env
     | InfixOper (op, e1, e2) ->
         let (r1, code1) = lower e1 in
         let (r2, code2) = lower e2 in
         let res = next () in
         res, code1 @ code2 @ [Binop (res, op, r1, r2)]
-    | PrefixOper (Plus, e) ->
-        lower e
+    | PrefixOper (Plus, e) -> lower e
     | PrefixOper (Minus, e) ->
         let (r, code) = lower e in
         let res = next () in
