@@ -5,11 +5,9 @@ module AST0 = struct
     | CharLit c -> "'" ^ Char.escaped c ^ "'"
     | BoolLit b -> string_of_bool b
   type binop = Ast.AST.op
-  type unop = [ `Not | `Ref | `Deref ]
+  type unop = [ `Not ]
   let string_of_unop = function
     | `Not -> "not"
-    | `Ref -> "&"
-    | `Deref -> "*"
   type reg = R of int
   let string_of_reg (R i) = "r" ^ string_of_int i
   type callable = Name of string | Address of reg
@@ -95,14 +93,8 @@ module AST0 = struct
         let res = next () in
         res, code @ [Unop (res, `Not, r)]
     | PrefixOper (_, _) -> failwith "unsupported prefix op in ast0"
-    | Ref e ->
-        let (r, code) = lower e in
-        let res = next () in
-        res, code @ [Unop (res, `Ref, r)]
-    | Deref e ->
-        let (r, code) = lower e in
-        let res = next () in
-        res, code @ [Unop (res, `Deref, r)]
+    | Deref _ -> failwith "deref unsupported in ast0"
+    | Ref _ -> failwith "ref unsupported in ast0"
     | SetEq (n, e) ->
         let (r, code) = lower e in
         let nr = Varenv.assoc n env in

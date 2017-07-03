@@ -34,6 +34,8 @@ module AST1 = struct
     | DIV of op3
     | LT of op3
     | GT of op3
+    | HHALF of op2 (* High 16 bits of word *)
+    | LHALF of op2 (* Low 16 bits of word *)
     | NAND of op3
     | MOV of op2
     | HALT
@@ -58,6 +60,8 @@ module AST1 = struct
     | DIV o -> "DIV " ^ string_of_op3 o
     | LT o -> "LT " ^ string_of_op3 o
     | GT o -> "GT " ^ string_of_op3 o
+    | HHALF o -> "HHALF " ^ string_of_op2 o
+    | LHALF o -> "LHALF " ^ string_of_op2 o
     | NAND o -> "NAND " ^ string_of_op3 o
     | MOV o -> "MOV " ^ string_of_op2 o
     | HALT -> "HALT"
@@ -101,8 +105,6 @@ module AST1 = struct
     | Binop (dst, Ast.AST.Gt, r1, r2) -> [GT (dst, r1, r2)]
     | Binop (_, _, _, _) -> failwith "unimplemented binary op in ast1"
     | Unop (dst, `Not, r1) -> [NAND (dst, r1, r1)]
-    | Unop (_, `Deref, _) -> failwith "deref unimplemented in ast1"
-    | Unop (_, `Ref, _) -> failwith "ref unimplemented in ast1"
     | Mov (dst, r1) -> [MOV (dst, r1)]
     | If (cr, iftrue, iffalse) ->
         let falseblock = lower_block iffalse in
