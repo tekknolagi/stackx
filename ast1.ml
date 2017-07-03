@@ -81,7 +81,8 @@ module AST1 = struct
       MAP (stack, R 1);
       LOADV (sp, 0);
       JUMP "main";
-  ] @ List.concat @@ List.map lower_command p
+  ] @ lower_block p
+  and lower_block b = List.concat @@ List.map lower_command b
   and lower_command = function
     | Label s -> [LABEL s]
     | Load (dst, (IntLit i)) -> [LOADV (dst, i)]
@@ -96,13 +97,14 @@ module AST1 = struct
     | Unop (dst, `Not, r1) -> [NAND (dst, r1, r1)]
     | Mov (dst, r1) -> [MOV (dst, r1)]
     | If (cr, iftrue, iffalse) ->
-        let falseblock = lower_prog iffalse in
+        let falseblock = lower_block iffalse in
         let truelbl = nextlbl () in
-        let trueblock = lower_prog iftrue in
+        let trueblock = lower_block iftrue in
         let endlbl = nextlbl () in
         [CJUMP (cr, truelbl)]
         @ falseblock @ [JUMP (string_of_label endlbl)]
         @ (mklbl truelbl)::trueblock
+        @ [mklbl endlbl]
     | Call (Name n) -> [JUMP n]
     | Call (Address a) -> [JUMPA a]
     | Push r -> [SSTORE (stack, sp, r); INC sp]
