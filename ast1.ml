@@ -101,6 +101,8 @@ module AST1 = struct
     | Binop (dst, Ast.AST.Gt, r1, r2) -> [GT (dst, r1, r2)]
     | Binop (_, _, _, _) -> failwith "unimplemented binary op in ast1"
     | Unop (dst, `Not, r1) -> [NAND (dst, r1, r1)]
+    | Unop (_, `Deref, _) -> failwith "deref unimplemented in ast1"
+    | Unop (_, `Ref, _) -> failwith "ref unimplemented in ast1"
     | Mov (dst, r1) -> [MOV (dst, r1)]
     | If (cr, iftrue, iffalse) ->
         let falseblock = lower_block iffalse in
