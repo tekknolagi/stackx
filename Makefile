@@ -2,15 +2,15 @@ all: tests shell
 
 .PHONY: all
 
-tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo tests.cmo
+tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o tests \
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
-					 typed_ast.cmo ast0.cmo tests.cmo
+					 typed_ast.cmo tests.cmo
 
-shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo shell.cmo
+shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo ast1.cmo shell.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o shell \
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
-					 typed_ast.cmo ast0.cmo shell.cmo
+					 typed_ast.cmo ast0.cmo ast1.cmo shell.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml

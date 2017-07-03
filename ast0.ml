@@ -5,11 +5,9 @@ module AST0 = struct
     | CharLit c -> "'" ^ Char.escaped c ^ "'"
     | BoolLit b -> string_of_bool b
   type binop = Ast.AST.op
-  type unop = [ `Not | `Plus | `Minus | `Ref | `Deref ]
+  type unop = [ `Not | `Ref | `Deref ]
   let string_of_unop = function
     | `Not -> "not"
-    | `Plus -> "+"
-    | `Minus -> "-"
     | `Ref -> "&"
     | `Deref -> "*"
   type reg = R of int
@@ -54,22 +52,16 @@ module AST0 = struct
     | Pop r -> "pop " ^ string_of_reg r
     | Label n -> n ^ ":"
 
-  let string_of_program p =
-    String.concat "\n" (List.map string_of_command p)
+  let string_of_program p = String.concat "\n" (List.map string_of_command p)
 
-  let num = ref 0
+  let num = ref 3 (* 0 for zero register, 1 for global stack, 2 for stack ptr *)
   let next _ = let i = !num in let () = num := !num + 1 in R i
 
   open Ast.AST
 
   let rec lower_exp exp env =
-    let to_unop = function
-      | Not -> `Not
-      | Plus -> `Plus
-      | Minus -> `Minus
-      | _ -> failwith "unsupported unary operator"
-    in
     let lower e = lower_exp e env in
+    let zr = R 0 in
     match exp with
     | IntLit i ->
         let r = next () in
@@ -87,10 +79,17 @@ module AST0 = struct
         let (r2, code2) = lower e2 in
         let res = next () in
         res, code1 @ code2 @ [Binop (res, op, r1, r2)]
-    | PrefixOper (op, e) ->
+    | PrefixOper (Plus, e) ->
+        lower e
+    | PrefixOper (Minus, e) ->
         let (r, code) = lower e in
         let res = next () in
-        res, code @ [Unop (res, to_unop op, r)]
+        res, code @ [Load (zr, IntLit 0); Binop (res, Minus, zr, r)]
+    | PrefixOper (Not, e) ->
+        let (r, code) = lower e in
+        let res = next () in
+        res, code @ [Unop (res, `Not, r)]
+    | PrefixOper (_, _) -> failwith "unsupported prefix op in ast0"
     | Ref e ->
         let (r, code) = lower e in
         let res = next () in
