@@ -39,4 +39,5 @@ clean:
 	-rm -f parser.cmi parser.cmo parser.ml parser.mli
 	-rm -f tests tests.cmi tests.cmo
 	-rm -f tests ast0.cmi ast0.cmo
+	-rm -f tests ast1.cmi ast1.cmo
 	-rm -f shell shell.cmi shell.cmo
