@@ -1,17 +1,17 @@
 module AST1 = struct
-  type reg = Ast0.AST0.reg
-  let string_of_reg = Ast0.AST0.string_of_reg
+  type var = Ast0.AST0.var
+  let string_of_var = Ast0.AST0.string_of_var
 
-  type op3 = reg * reg * reg
+  type op3 = var * var * var
   let string_of_op3 (r1, r2, r3) =
-    String.concat ", " (List.map Ast0.AST0.string_of_reg [r1; r2; r3])
+    String.concat ", " (List.map Ast0.AST0.string_of_var [r1; r2; r3])
 
-  type op2 = reg * reg
+  type op2 = var * var
   let string_of_op2 (r1, r2) =
-    String.concat ", " (List.map Ast0.AST0.string_of_reg [r1; r2])
+    String.concat ", " (List.map Ast0.AST0.string_of_var [r1; r2])
 
-  type op1 = reg
-  let string_of_op1 = Ast0.AST0.string_of_reg
+  type op1 = var
+  let string_of_op1 = Ast0.AST0.string_of_var
 
   type label = L of int
   let string_of_label (L i) = "_L" ^ string_of_int i
@@ -21,7 +21,7 @@ module AST1 = struct
 
   type command =
     | LABEL of string
-    | CJUMP of reg * label
+    | CJUMP of var * label
     | JUMP of string
     | JUMPA of op1
     | SLOAD of op3
@@ -43,11 +43,11 @@ module AST1 = struct
     | UNMAP of op1
     | OUTPUT of op1
     | INPUT of op1
-    | LOADV of reg * int
+    | LOADV of var * int
 
   let string_of_command c =
     let s = function
-    | CJUMP (r, l) -> "CJUMP " ^ string_of_reg r ^ " " ^ string_of_label l
+    | CJUMP (r, l) -> "CJUMP " ^ string_of_var r ^ " " ^ string_of_label l
     | JUMP s -> "JUMP " ^ s
     | JUMPA r -> "JUMP " ^ string_of_op1 r
     | SLOAD o -> "SLOAD " ^ string_of_op3 o
@@ -69,7 +69,7 @@ module AST1 = struct
     | UNMAP o -> "UNMAP " ^ string_of_op1 o
     | OUTPUT o -> "OUTPUT "  ^ string_of_op1 o
     | INPUT o -> "INPUT " ^ string_of_op1 o
-    | LOADV (r, i) -> "LOADV " ^ string_of_reg r ^ ", $" ^ string_of_int i
+    | LOADV (r, i) -> "LOADV " ^ string_of_var r ^ ", $" ^ string_of_int i
     | _ -> failwith "can't happen"
     in
     match c with
@@ -80,13 +80,13 @@ module AST1 = struct
 
   open Ast0.AST0
   let mklbl i = LABEL (string_of_label i)
-  let stack = R 1
-  let sp = R 2
+  let stack = V 1
+  let sp = V 2
   let rec lower_prog p =
     let stacksize = 1000 in
     [ LABEL "_start";
-      LOADV (R 1, stacksize);
-      MAP (stack, R 1);
+      LOADV (V 1, stacksize);
+      MAP (stack, V 1);
       LOADV (sp, 0);
       JUMP "main";
     ] @ lower_block p @ [UNMAP stack; HALT]

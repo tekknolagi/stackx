@@ -8,58 +8,58 @@ module AST0 = struct
   type unop = [ `Not ]
   let string_of_unop = function
     | `Not -> "not"
-  type reg = R of int
-  let string_of_reg (R i) = "r" ^ string_of_int i
-  type callable = Name of string | Address of reg
+  type var = V of int
+  let string_of_var (V i) = "v" ^ string_of_int i
+  type callable = Name of string | Address of var
   let string_of_callable = function
     | Name n -> n
-    | Address r -> "(" ^ string_of_reg r ^ ")"
+    | Address r -> "(" ^ string_of_var r ^ ")"
   type command =
-    | Load of reg * lit
-    | Binop of reg * binop * reg * reg
-    | Unop of reg * unop * reg
-    | Mov of reg * reg
-    | If of reg * command list * command list
+    | Load of var * lit
+    | Binop of var * binop * var * var
+    | Unop of var * unop * var
+    | Mov of var * var
+    | If of var * command list * command list
     | Call of callable
-    | While of reg * command list * command list
-    | Push of reg (* Push a register onto the global stack. *)
-    | Pop of reg  (* Pop a value from the global stack into a register. *)
+    | While of var * command list * command list
+    | Push of var (* Push a variable onto the global stack. *)
+    | Pop of var  (* Pop a value from the global stack into a variable. *)
     | Label of string
 
-  let set r = string_of_reg r ^ " <- "
+  let set r = string_of_var r ^ " <- "
   let rec string_of_command = function
     | Load (dst, l) ->
         set dst ^ string_of_lit l
     | Binop (dst, o, r1, r2)  ->
-        set dst ^ string_of_reg r1 ^ Ast.AST.string_of_op o ^ string_of_reg r2
+        set dst ^ string_of_var r1 ^ Ast.AST.string_of_op o ^ string_of_var r2
     | Unop (dst, o, r) ->
-        set dst ^ string_of_unop o ^ string_of_reg r
+        set dst ^ string_of_unop o ^ string_of_var r
     | Mov (dst, src) ->
-        set dst ^ string_of_reg src
+        set dst ^ string_of_var src
     | If (cond, iftrue, iffalse) ->
-        "if (" ^ string_of_reg cond ^ ") {\n" ^ String.concat "\n" (List.map
+        "if (" ^ string_of_var cond ^ ") {\n" ^ String.concat "\n" (List.map
         string_of_command iftrue) ^ "\n} else {\n" ^ String.concat "\n" (List.map
         string_of_command iffalse) ^ "\n}"
     | Call (f) ->
         "call " ^ string_of_callable f
     | While (cr, cond, body) ->
-        "while (" ^ string_of_reg cr ^ ") {\n" ^ String.concat "\n" (List.map
+        "while (" ^ string_of_var cr ^ ") {\n" ^ String.concat "\n" (List.map
         string_of_command cond) ^ "\n} | {\n" ^ String.concat "\n" (List.map
         string_of_command body) ^ "\n}"
-    | Push r -> "push " ^ string_of_reg r
-    | Pop r -> "pop " ^ string_of_reg r
+    | Push r -> "push " ^ string_of_var r
+    | Pop r -> "pop " ^ string_of_var r
     | Label n -> n ^ ":"
 
   let string_of_program p = String.concat "\n" (List.map string_of_command p)
 
-  let num = ref 3 (* 0 for zero register, 1 for global stack, 2 for stack ptr *)
-  let next _ = let i = !num in let () = num := !num + 1 in R i
+  let num = ref 3 (* 0 for zero variable, 1 for global stack, 2 for stack ptr *)
+  let next _ = let i = !num in let () = num := !num + 1 in V i
 
   open Ast.AST
 
   let rec lower_exp exp env =
     let lower e = lower_exp e env in
-    let zr = R 0 in
+    let zr = V 0 in
     match exp with
     | IntLit i ->
         let r = next () in
@@ -146,9 +146,9 @@ module AST0 = struct
         (Varenv.bind n r env), code
     | Fun (n, formals, _, body) ->
         let formalnames = List.map fst formals in
-        let formalregs = List.map next formals in
-        let env' = Varenv.bindlist formalnames formalregs env in
-        let pops = List.map (fun x -> Pop x) formalregs in
+        let formalvars = List.map next formals in
+        let env' = Varenv.bindlist formalnames formalvars env in
+        let pops = List.map (fun x -> Pop x) formalvars in
         let (_, bodycode) = lower_block body env' in
         env, [Label n] @ pops @ bodycode
 
