@@ -1,6 +1,6 @@
-type 'a binding = string * 'a
-type 'a frame = 'a binding list
-type 'a env = 'a frame list
+type ('k, 'v) binding = 'k * 'v
+type ('k, 'v) frame = ('k, 'v) binding list
+type ('k, 'v) env = ('k, 'v) frame list
 
 let empty = []
 
