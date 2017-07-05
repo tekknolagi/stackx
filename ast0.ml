@@ -52,7 +52,9 @@ module AST0 = struct
 
   let string_of_program p = String.concat "\n" (List.map string_of_command p)
 
-  let num = ref 3 (* 0 for zero variable, 1 for global stack, 2 for stack ptr *)
+  (* 0 for zero variable, 1 for global stack, 2 for stack ptr,
+     3 for register allocation spill *)
+  let num = ref 4
   let next _ = let i = !num in let () = num := !num + 1 in V i
 
   open Ast.AST

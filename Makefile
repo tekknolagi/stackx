@@ -7,7 +7,8 @@ tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
 					 typed_ast.cmo tests.cmo
 
-shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo ast1.cmo shell.cmo
+shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo \
+		ast1.cmo shell.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o shell \
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
 					 typed_ast.cmo ast0.cmo ast1.cmo shell.cmo
