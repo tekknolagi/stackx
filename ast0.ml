@@ -24,6 +24,8 @@ module AST0 = struct
     | While of var * command list * command list
     | Push of var (* Push a variable onto the global stack. *)
     | Pop of var  (* Pop a value from the global stack into a variable. *)
+    | Output of var
+    | Input of var
     | Label of string
 
   let set r = string_of_var r ^ " <- "
@@ -49,6 +51,8 @@ module AST0 = struct
     | Push r -> "push " ^ string_of_var r
     | Pop r -> "pop " ^ string_of_var r
     | Label n -> n ^ ":"
+    | Output r -> "out(" ^ string_of_var r ^ ")"
+    | Input dst -> set dst ^ "in()"
 
   let string_of_program p = String.concat "\n" (List.map string_of_command p)
 
@@ -101,6 +105,12 @@ module AST0 = struct
         let (r, code) = lower e in
         let nr = Varenv.assoc n env in
         nr, code @ [Mov (nr, r)]
+    | Funcall (Var "out", [arg]) ->
+        let (cr, ccode) = lower arg in
+        next (), ccode @ [ Output cr ]
+    | Funcall (Var "in", [dst]) ->
+        let ret = next () in
+        ret, [ Input ret ]
     | Funcall (f, es) ->
         let (ers, ecodes) = List.split @@ List.map lower es in
         let pushes = List.map (fun x -> Push x) ers in

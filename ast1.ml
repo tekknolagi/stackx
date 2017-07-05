@@ -81,7 +81,7 @@ module AST1 = struct
   let stack = R 1
   let sp = R 2
   let spillblock = R 3
-  let aux = R 4 
+  let aux = R 4
   let tmp = R 5
   let dest = R 6
   let rec lower_prog p =
@@ -135,7 +135,9 @@ module AST1 = struct
     | Call (Name n) -> [JUMP n]
     | Call (Address a) -> load (R 7) a @ [JUMPA (R 7)]
     | Push v -> load (R 7) v @ [SSTORE (stack, sp, R 7); INC sp]
-    | Pop v -> load (R 7) v @ [DEC sp; SLOAD (stack, sp, R 7)]
+    | Pop dst ->
+        load dest dst
+        @ [DEC sp; SLOAD (R 7, stack, sp); SSTORE (spillblock, dest, R 7)]
     | While (cv, ccode, bcode) ->
         let condlbl = nextlbl () in
         let cblock = lower_block ccode in
@@ -147,4 +149,6 @@ module AST1 = struct
         @ [JUMP (string_of_label endlbl); mklbl bodylbl]
         @ bblock
         @ [JUMP (string_of_label condlbl); mklbl endlbl]
+    | Output v -> load (R 7) v @ [OUTPUT (R 7)]
+    | Input dst -> [INPUT (R 7)] @ store (R 7) dst
 end
