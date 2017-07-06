@@ -33,9 +33,6 @@ module AST1 = struct
     | MULT of op3
     | DIV of op3
     | LT of op3
-    | GT of op3
-    | HHALF of op2 (* High 16 bits of word *)
-    | LHALF of op2 (* Low 16 bits of word *)
     | NAND of op3
     | HALT
     | MAP of op2
@@ -58,9 +55,6 @@ module AST1 = struct
     | MULT o -> "MULT " ^ string_of_op3 o
     | DIV o -> "DIV " ^ string_of_op3 o
     | LT o -> "LT " ^ string_of_op3 o
-    | GT o -> "GT " ^ string_of_op3 o
-    | HHALF o -> "HHALF " ^ string_of_op2 o
-    | LHALF o -> "LHALF " ^ string_of_op2 o
     | NAND o -> "NAND " ^ string_of_op3 o
     | HALT -> "HALT"
     | MAP o -> "MAP " ^ string_of_op2 o
@@ -94,7 +88,7 @@ module AST1 = struct
       MAP (spillblock, R 3);
       LOADV (sp, 0);
       JUMP "main";
-    ] @ lower_block p @ [UNMAP stack; HALT]
+    ] @ lower_block p @ [UNMAP spillblock; UNMAP stack; HALT]
   and lower_block b = List.concat @@ List.map lower_command b
   and load dst (V i) = [ LOADV (aux, i); SLOAD (dst, spillblock, aux) ]
   and store r (V off) = [ LOADV (aux, off); SSTORE (spillblock, aux, r) ]
@@ -117,7 +111,7 @@ module AST1 = struct
     | Binop (dst, Ast.AST.Lt, v1, v2) ->
         op3 dst v1 v2 [LT (dest, aux, tmp)]
     | Binop (dst, Ast.AST.Gt, v1, v2) ->
-        op3 dst v1 v2 [GT (dest, aux, tmp)]
+        op3 dst v1 v2 [LT (dest, tmp, aux)]
     | Binop (_, _, _, _) -> failwith "unimplemented binary op in ast1"
     | Unop (dst, `Not, v1) ->
         load (R 7) v1 @ [NAND (dest, R 7, R 7)] @ store dest dst

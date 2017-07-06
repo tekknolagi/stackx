@@ -141,6 +141,7 @@ module AST0 = struct
         let (env', bcode) = lower_block body env in
         env, [While (cr, ccode, bcode)]
     | Return e ->
+        (* TODO: jump to return address... *)
         let (r, code) = lower_exp e env in
         env, code @ [Push r]
 
