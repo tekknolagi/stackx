@@ -3,18 +3,19 @@ package main
 type Op int
 
 const (
-	CMOV Op = iota
+	CJUMP Op = iota
 	SLOAD
 	SSTORE
 	ADD
+	SUB
 	MULT
 	DIV
+	LT
 	NAND
 	HALT
 	MAP
 	UNMAP
 	OUTPUT
 	INPUT
-	LOADP
 	LOADV
 )

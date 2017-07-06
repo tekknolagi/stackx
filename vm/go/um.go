@@ -9,6 +9,13 @@ import (
 	"os"
 )
 
+func btoi(b bool) uint32 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func run(program []uint32) {
 	reg := [8]uint32{0, 0, 0, 0, 0, 0, 0, 0}
 	platters := [][]uint32{program}
@@ -22,9 +29,10 @@ func run(program []uint32) {
 		b := ((instruction >> 3) & 7)
 		c := ((instruction >> 0) & 7)
 		switch op {
-		case CMOV:
-			if reg[c] != 0 {
-				reg[a] = reg[b]
+		case CJUMP:
+			if reg[a] != 0 {
+				pc = reg[b]
+				continue
 			}
 		case SLOAD:
 			reg[a] = platters[reg[b]][reg[c]]
@@ -32,10 +40,14 @@ func run(program []uint32) {
 			platters[reg[a]][reg[b]] = reg[c]
 		case ADD:
 			reg[a] = reg[b] + reg[c]
+		case SUB:
+			reg[a] = reg[b] - reg[c]
 		case MULT:
 			reg[a] = reg[b] * reg[c]
 		case DIV:
 			reg[a] = reg[b] / reg[c]
+		case LT:
+			reg[a] = btoi(reg[b] < reg[c])
 		case NAND:
 			reg[a] = ^(reg[b] & reg[c])
 		case HALT:
@@ -65,15 +77,6 @@ func run(program []uint32) {
 				_, err := os.Stdin.Read(b)
 				check(err)
 				reg[c] = uint32(b[0])
-			}
-		case LOADP:
-			{
-				if reg[b] != 0 {
-					platters[0] = make([]uint32, len(platters[reg[b]]))
-					copy(platters[0], platters[reg[b]])
-				}
-				pc = reg[c]
-				continue
 			}
 		case LOADV:
 			reg[(instruction>>25)&7] = instruction & 0x01FFFFFF
@@ -108,7 +111,7 @@ func disassemble(program []uint32) {
 		c := ((instruction >> 0) & 7)
 		var text string
 		switch op {
-		case CMOV:
+		case CJUMP:
 			fallthrough
 		case SLOAD:
 			fallthrough
@@ -116,17 +119,19 @@ func disassemble(program []uint32) {
 			fallthrough
 		case ADD:
 			fallthrough
+		case SUB:
+			fallthrough
 		case MULT:
 			fallthrough
 		case DIV:
+			fallthrough
+		case LT:
 			fallthrough
 		case NAND:
 			text = fmt.Sprintf("%s %%%d, %%%d, %%%d", op.String(), a, b, c)
 		case HALT:
 			text = fmt.Sprintf("%s", op.String())
 		case MAP:
-			fallthrough
-		case LOADP:
 			text = fmt.Sprintf("%s %%%d, %%%d", op.String(), b, c)
 		case LOADV:
 			text = fmt.Sprintf("%s %%%d, %x", op.String(), (instruction>>25)&7, instruction&0x01FFFFFFc)
@@ -150,18 +155,22 @@ func rtl(program []uint32) {
 		c := ((instruction >> 0) & 7)
 		var text string
 		switch op {
-		case CMOV:
-			text = fmt.Sprintf("IF REG[%d] != 0 { REG[%d] = REG[%d] }", c, a, b)
+		case CJUMP:
+			text = fmt.Sprintf("IF REG[%d] != 0 { goto REG[%d] }", a, b)
 		case SLOAD:
 			text = fmt.Sprintf("REG[%d] = PLATTERS[REG[%d]][REG[%d]]", a, b, c)
 		case SSTORE:
 			text = fmt.Sprintf("PLATTERS[REG[%d]][REG[%d]] = REG[%d]", a, b, c)
 		case ADD:
 			text = fmt.Sprintf("REG[%d] = REG[%d] + REG[%d]", a, b, c)
+		case SUB:
+			text = fmt.Sprintf("REG[%d] = REG[%d] - REG[%d]", a, b, c)
 		case MULT:
 			text = fmt.Sprintf("REG[%d] = REG[%d] * REG[%d]", a, b, c)
 		case DIV:
 			text = fmt.Sprintf("REG[%d] = REG[%d] / REG[%d]", a, b, c)
+		case LT:
+			text = fmt.Sprintf("REG[%d] = REG[%d] < REG[%d]", a, b, c)
 		case NAND:
 			text = fmt.Sprintf("REG[%d] = ^(REG[%d] & REG[%d])", a, b, c)
 		case HALT:
@@ -174,8 +183,6 @@ func rtl(program []uint32) {
 			text = fmt.Sprintf("OUTPUT(REG[%d])", c)
 		case INPUT:
 			text = fmt.Sprintf("REG[%d] = INPUT()", c)
-		case LOADP:
-			text = fmt.Sprintf("PLATTERS[0] = PLATTERS[REG[%d]]; GOTO REG[%d]", b, c)
 		case LOADV:
 			text = fmt.Sprintf("REG[%d] = %x", (instruction>>25)&7, instruction&0x01FFFFFFc)
 		}
