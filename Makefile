@@ -8,10 +8,10 @@ tests: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo tests.cmo
 					 typed_ast.cmo tests.cmo
 
 shell: varenv.cmo ast.cmo lexer.cmo parser.cmo typed_ast.cmo ast0.cmo \
-		ast1.cmo shell.cmo
+		ast1.cmo assembler.cmo shell.cmo
 	ocamlfind ocamlc -package menhirLib -linkpkg -o shell \
 			         varenv.cmo ast.cmo lexer.cmo parser.cmo \
-					 typed_ast.cmo ast0.cmo ast1.cmo shell.cmo
+					 typed_ast.cmo ast0.cmo ast1.cmo assembler.cmo shell.cmo
 
 lexer.cmo: lexer.ml parser.cmi
 	ocamlc -c lexer.ml
@@ -39,6 +39,7 @@ clean:
 	-rm -f lexer.cmi lexer.cmo lexer.ml
 	-rm -f parser.cmi parser.cmo parser.ml parser.mli
 	-rm -f tests tests.cmi tests.cmo
-	-rm -f tests ast0.cmi ast0.cmo
-	-rm -f tests ast1.cmi ast1.cmo
+	-rm -f ast0.cmi ast0.cmo
+	-rm -f ast1.cmi ast1.cmo
+	-rm -f assembler.cmi assembler.cmo
 	-rm -f shell shell.cmi shell.cmo

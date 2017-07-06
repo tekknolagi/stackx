@@ -10,6 +10,9 @@ type op3 = Ast1.AST1.op3
 type op2 = Ast1.AST1.op2
 type op1 = Ast1.AST1.op1
 
+let (string_of_op3, string_of_op2, string_of_op1) =
+  Ast1.AST1.(string_of_op3, string_of_op2, string_of_op1)
+
 type command =
   | UCJUMP of op2
   | USLOAD of op3
@@ -56,8 +59,28 @@ let lower_prog label_env prog =
   in
   List.concat (List.map lower_command prog)
 
+let output_prog prog =
+  let assemble_command = function
+    | UCJUMP o2 -> "cjump " ^ string_of_op2 o2
+    | USLOAD o3 -> "sload " ^ string_of_op3 o3
+    | USSTORE o3 -> "sstore " ^ string_of_op3 o3
+    | UADD o3 -> "add " ^ string_of_op3 o3
+    | USUB o3 -> "sub " ^ string_of_op3 o3
+    | UMULT o3 -> "mult " ^ string_of_op3 o3
+    | UDIV o3 -> "div " ^ string_of_op3 o3
+    | ULT o3 -> "lt " ^ string_of_op3 o3
+    | UNAND o3 -> "nand " ^ string_of_op3 o3
+    | UHALT -> "halt"
+    | UMAP o2 -> "map " ^ string_of_op2 o2
+    | UUNMAP o1 -> "unmap " ^ string_of_op1 o1
+    | UOUTPUT o1 -> "out " ^ string_of_op1 o1
+    | UINPUT o1 -> "in " ^ string_of_op1 o1
+    | ULOADV (r, i) -> "loadv " ^ string_of_op1 r ^ ", $" ^ string_of_int i
+  in
+  List.iter print_endline (List.map assemble_command prog)
+
 let assemble prog =
   let label_env = find_labels 0 prog in
   let not_label = function | Ast1.AST1.LABEL _ -> false | _ -> true in
   let without_labels = List.filter not_label prog in
-  lower_prog label_env without_labels
+  output_prog @@ lower_prog label_env without_labels

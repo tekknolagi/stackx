@@ -58,8 +58,14 @@ module AST0 = struct
 
   (* 0 for zero variable, 1 for global stack, 2 for stack ptr,
      3 for register allocation spill *)
-  let num = ref 4
-  let next _ = let i = !num in let () = num := !num + 1 in V i
+  let vnum = ref 4
+  let next _ = let i = !vnum in let () = vnum := !vnum + 1 in V i
+
+  type label = L of int
+  let string_of_label (L i) = "_L" ^ string_of_int i
+
+  let lnum = ref 0
+  let nextlbl _ = let i = !lnum in let () = lnum := !lnum + 1 in L i
 
   open Ast.AST
 
@@ -115,6 +121,7 @@ module AST0 = struct
         let (ers, ecodes) = List.split @@ List.map lower es in
         let pushes = List.map (fun x -> Push x) ers in
         let argument_eval = (List.concat ecodes) @ pushes in
+        (* TODO: push return address *)
         let ret = next () in
         (match f with
          | Var n ->

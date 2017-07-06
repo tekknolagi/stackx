@@ -13,11 +13,8 @@ module AST1 = struct
   type op1 = reg
   let string_of_op1 = string_of_reg
 
-  type label = L of int
-  let string_of_label (L i) = "_L" ^ string_of_int i
-
-  let num = ref 0
-  let nextlbl _ = let i = !num in let () = num := !num + 1 in L i
+  type label = Ast0.AST0.label
+  let string_of_label = Ast0.AST0.string_of_label
 
   type command =
     | LABEL of string
@@ -80,7 +77,7 @@ module AST1 = struct
   let dest = R 6
   let rec lower_prog p =
     let stacksize = 1000 in
-    let spillsize = !Ast0.AST0.num in (* Number of variables *)
+    let spillsize = !Ast0.AST0.vnum in (* Number of variables *)
     [ LABEL "_start";
       LOADV (R 1, stacksize);
       MAP (stack, R 1);

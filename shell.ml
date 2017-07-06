@@ -24,8 +24,7 @@ let rec umshell () =
   prompt ();
   let ast = parse @@ input_line stdin in
   let (e, l) = Ast0.AST0.lower_prog @@ ast in
-  let p = Ast1.AST1.lower_prog @@ l in
-  print_endline @@ Ast1.AST1.string_of_prog p;
+  Assembler.assemble @@ Ast1.AST1.lower_prog l;
   umshell ()
 
 let () =
