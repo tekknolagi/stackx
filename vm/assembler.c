@@ -99,9 +99,9 @@ word file_lines (FILE *fp)
 
 static int instr_lookup (char *instr)
 {
-        static char reverse_ops[][7] = { "cmov", "sload", "sstore", "add",
-                                         "mult", "div", "nand", "halt", "map",
-                                         "unmap", "out", "in", "loadp",
+        static char reverse_ops[][7] = { "cjump", "sload", "sstore", "add",
+                                         "sub", "mult", "div", "lt", "nand",
+                                         "halt", "map", "unmap", "out", "in",
                                          "loadv"
                                        };
         static int NUM_INSTRS = 14;
@@ -115,8 +115,8 @@ static int instr_lookup (char *instr)
         return -1;
 }
 
-enum ops { CMOV = 0, SLOAD, SSTORE, ADD, MULT, DIV, NAND, HALT,
-           MAP, UNMAP, OUT, IN, LOADP, LOADV
+enum ops { CJUMP = 0, SLOAD, SSTORE, ADD, SUB, MULT, DIV, LT, NAND, HALT,
+           MAP, UNMAP, OUT, IN, LOADV
          };
 
 static const char OP_WIDTH = 4;
@@ -207,10 +207,10 @@ static word read_instr (FILE *input, char *instr)
                                 break;
                         }
 
-                case LOADP: {
+                case CJUMP: {
                                 unsigned char rb = read_reg(input);
                                 unsigned char rc = read_reg(input);
-                                w = three_register(LOADP, 0, rb, rc);
+                                w = three_register(CJUMP, 0, rb, rc);
                                 break;
                         }
 

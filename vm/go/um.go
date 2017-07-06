@@ -30,8 +30,8 @@ func run(program []uint32) {
 		c := ((instruction >> 0) & 7)
 		switch op {
 		case CJUMP:
-			if reg[a] != 0 {
-				pc = reg[b]
+			if reg[b] != 0 {
+				pc = reg[c]
 				continue
 			}
 		case SLOAD:
