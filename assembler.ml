@@ -10,8 +10,14 @@ type op3 = Ast1.AST1.op3
 type op2 = Ast1.AST1.op2
 type op1 = Ast1.AST1.op1
 
-let (string_of_op3, string_of_op2, string_of_op1) =
-  Ast1.AST1.(string_of_op3, string_of_op2, string_of_op1)
+let string_of_op3 (r1, r2, r3) =
+  String.concat " " (List.map Ast1.AST1.string_of_reg [r1; r2; r3])
+
+let string_of_op2 (r1, r2) =
+  String.concat " " (List.map Ast1.AST1.string_of_reg [r1; r2])
+
+let string_of_op1 r1 =
+  String.concat " " (List.map Ast1.AST1.string_of_reg [r1])
 
 type command =
   | UCJUMP of op2
@@ -75,7 +81,7 @@ let output_prog prog =
     | UUNMAP o1 -> "unmap " ^ string_of_op1 o1
     | UOUTPUT o1 -> "out " ^ string_of_op1 o1
     | UINPUT o1 -> "in " ^ string_of_op1 o1
-    | ULOADV (r, i) -> "loadv " ^ string_of_op1 r ^ ", $" ^ string_of_int i
+    | ULOADV (r, i) -> "loadv " ^ string_of_op1 r ^ " $" ^ string_of_int i
   in
   List.iter print_endline (List.map assemble_command prog)
 

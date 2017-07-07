@@ -104,7 +104,7 @@ static int instr_lookup (char *instr)
                                          "halt", "map", "unmap", "out", "in",
                                          "loadv"
                                        };
-        static int NUM_INSTRS = 14;
+        static int NUM_INSTRS = 15;
 
         for (int i = 0; i < NUM_INSTRS; i++) {
                 if (strcmp(instr, reverse_ops[i]) == 0) {
@@ -163,7 +163,7 @@ static unsigned read_reg (FILE *input)
 static word read_val (FILE *input)
 {
         word val = 0;
-        fscanf(input, " %u", &val);
+        fscanf(input, " $%u", &val);
         return val;
 }
 
