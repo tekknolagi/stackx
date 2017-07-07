@@ -94,6 +94,7 @@ module AST1 = struct
     | Label s -> [LABEL s]
     | Load ((V dst), (IntLit i)) ->
         [LOADV (aux, i); LOADV (tmp, dst); SSTORE (spillblock, tmp, aux)]
+    | Load (vdst, UnitLit) -> lower_command (Load (vdst, IntLit 0))
     | Load (dst, (BoolLit true)) -> lower_command (Load (dst, IntLit 1))
     | Load (dst, (BoolLit false)) -> lower_command (Load (dst, IntLit 0))
     | Load (dst, (CharLit c)) -> lower_command (Load (dst, IntLit (Char.code c)))

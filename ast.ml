@@ -1,8 +1,8 @@
 module Type = struct
-  type prim = Void | Int | String | Bool | Char
+  type prim = Unit | Int | String | Bool | Char
 
   let rec prim_to_string = function
-    | Void -> "Void"
+    | Unit -> "()"
     | Int -> "Int"
     | String -> "String"
     | Bool -> "Bool"
@@ -43,6 +43,7 @@ module AST = struct
 
   type exp =
     | IntLit of int
+    | UnitLit
     | CharLit of char
     | BoolLit of bool
     | Var of name
@@ -54,6 +55,7 @@ module AST = struct
     | SetEq of name * exp
   let rec string_of_exp = function
     | IntLit i -> "IntLit " ^ string_of_int i
+    | UnitLit -> "()"
     | CharLit c -> "CharLit " ^ String.make 1 c
     | BoolLit b -> "BoolLit " ^ string_of_bool b
     | Var n -> "Var \"" ^ n ^ "\""
@@ -129,6 +131,7 @@ let const_eval defs =
   in
   let rec evexp env = function
     | IntLit i -> IntLit i
+    | UnitLit -> UnitLit
     | CharLit c -> CharLit c
     | BoolLit b -> BoolLit b
     | Var n -> Varenv.assoc n env

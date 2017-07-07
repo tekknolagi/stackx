@@ -1,7 +1,8 @@
 module AST0 = struct
-  type lit = IntLit of int | CharLit of char | BoolLit of bool
+  type lit = IntLit of int | UnitLit | CharLit of char | BoolLit of bool
   let string_of_lit = function
     | IntLit i -> string_of_int i ^ "i"
+    | UnitLit -> "()"
     | CharLit c -> "'" ^ Char.escaped c ^ "'"
     | BoolLit b -> string_of_bool b
   type binop = Ast.AST.op
@@ -76,6 +77,9 @@ module AST0 = struct
     | IntLit i ->
         let r = next () in
         r, [ Load (r, IntLit i) ]
+    | UnitLit ->
+        let r = next () in
+        r, [ Load (r, UnitLit) ]
     | CharLit c ->
         let r = next () in
         r, [ Load (r, CharLit c) ]

@@ -41,6 +41,7 @@ module Typed_AST = struct
       in
       let rec ty = function
       | IntLit _ -> Prim Ast.Type.Int
+      | UnitLit -> Prim Ast.Type.Unit
       | CharLit _ -> Prim Ast.Type.Char
       | BoolLit _ -> Prim Ast.Type.Bool
       | Var n -> Varenv.assoc n tyenv

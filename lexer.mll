@@ -16,7 +16,7 @@ rule token = parse
   | "while"        { KWhile }
   | "true"         { KTrue }
   | "false"        { KFalse }
-  | "void"         { TVoid }
+  | "()"           { TUnit }
   | "int"          { TInt }
   | "string"       { TString }
   | "bool"         { TBool }

@@ -7,7 +7,7 @@
 %token LT LTE GT GTE EQ NOT NEQ
 %token OR AND
 %token KFor KFunc KReturn KConst KLet KIf KElse KWhile KTrue KFalse
-%token TVoid TInt TString TBool TChar
+%token TUnit TInt TString TBool TChar
 %token LPAREN RPAREN
 %token LCURLY RCURLY
 %token COLON SEMICOLON
@@ -24,13 +24,14 @@ main:
 ;
 
 top_level_statement:
-  | KFunc VAR LPAREN separated_list(COMMA, variable_decl) RPAREN COLON type_exp block
+  | KFunc VAR LPAREN separated_nonempty_list(COMMA, variable_decl) RPAREN COLON type_exp block
     { Ast.AST.Fun ($2, $4, $7, $8) }
   | KConst variable_decl EQUALS exp SEMICOLON
     { Ast.AST.Const ($2, $4) }
 ;
 
 variable_decl:
+  | TUnit { "()", Ast.Type.(Prim Unit) }
   | VAR COLON type_exp { $1, $3 }
 ;
 
@@ -117,6 +118,7 @@ call_exp:
 literal:
   | INT                  { Ast.AST.IntLit $1 }
   | CHAR                 { Ast.AST.CharLit $1 }
+  | TUnit                { Ast.AST.UnitLit }
   | KTrue                { Ast.AST.BoolLit true }
   | KFalse               { Ast.AST.BoolLit false }
   | VAR                  { Ast.AST.Var $1 }
@@ -131,7 +133,7 @@ type_exp:
 ;
 
 type_identifier:
-  | TVoid     { Ast.Type.(Prim Void) }
+  | TUnit     { Ast.Type.(Prim Unit) }
   | TInt      { Ast.Type.(Prim Int) }
   | TString   { Ast.Type.(Prim String) }
   | TBool     { Ast.Type.(Prim Bool) }
