@@ -58,7 +58,7 @@ int imm32() {
 void run_one_instruction() {
   switch (next()) {
     case 0x05: {  // add EAX, imm32
-      int arg2 = imm32(mem);
+      int arg2 = imm32();
       int64_t tmp = r[EAX] + arg2;
       r[EAX] += arg2;
       SF = (r[EAX] < 0);
@@ -67,8 +67,18 @@ void run_one_instruction() {
       break;
     }
     case 0x81:  // add r/m32, imm32
+      // test case: add %eax, 0xd => 01 05 00 00 00
+      uint8_t modrm = next();
+      uint8_t mod = (modrm>>6);
+      uint8_t reg = (modrm>>3) & 0x7;
+      uint8_t rm = modrm & 0x7;
+      int arg2 = imm32();
       break;
     case 0x01:  // add r/m32, r32
+      uint8_t modrm = next();
+      uint8_t mod = (modrm>>6);
+      uint8_t reg = (modrm>>3) & 0x7;
+      uint8_t rm = modrm & 0x7;
       break;
     case 0x03:  // add r32, r/m32
       break;
