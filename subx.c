@@ -33,11 +33,13 @@ enum {
 int r[NUM_INT_REGISTERS] = {0};
 float xmm[NUM_FLOAT_REGISTERS] = {0};
 unsigned int EIP = 0;
+// subset of flags
 bool OF=false, ZF=false, SF=false;
 
 uint8_t mem[] = {
   // program goes here
   0x05, 0x0a, 0x0b, 0x0c, 0x0d,  // add EAX, 0x0d0c0b0a
+  0x81, 0xc3, 0x0a, 0x0b, 0x0c, 0x0d,  // add EBX, 0x0d0c0b0a
   0xf4,  // hlt
 };
 
@@ -66,20 +68,41 @@ void run_one_instruction() {
       OF = (r[EAX] != tmp);
       break;
     }
-    case 0x81:  // add r/m32, imm32
+    case 0x81: {  // add r/m32, imm32
       // test case: add %eax, 0xd => 01 05 00 00 00
       uint8_t modrm = next();
       uint8_t mod = (modrm>>6);
-      uint8_t reg = (modrm>>3) & 0x7;
+      // ignore middle 3 'reg opcode' bits
       uint8_t rm = modrm & 0x7;
+      int* effective_address = 0;
+      // Table 2-2 in the Intel manual, Volume 2
+      switch (mod) {
+        case 0:
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+        case 3:
+          // operand 1 is just the contents of the rm register
+          effective_address = &r[rm];
+          break;
+      }
       int arg2 = imm32();
+      int64_t tmp = *effective_address + arg2;
+      *effective_address += arg2;
+      SF = (*effective_address < 0);
+      ZF = (*effective_address == 0);
+      OF = (*effective_address != tmp);
       break;
-    case 0x01:  // add r/m32, r32
+    }
+    case 0x01: {  // add r/m32, r32
       uint8_t modrm = next();
       uint8_t mod = (modrm>>6);
       uint8_t reg = (modrm>>3) & 0x7;
       uint8_t rm = modrm & 0x7;
       break;
+    }
     case 0x03:  // add r32, r/m32
       break;
     case 0x0f:  // escape
@@ -107,7 +130,8 @@ void run_one_instruction() {
       break;
     case 0xf4:  // hlt
       fprintf(stderr, "hlt encountered\n");
-      exit(0);
+      EIP = sizeof(mem);
+      break;
     default:
       fprintf(stderr, "unrecognized opcode: %x\n", mem[EIP-1]);
       exit(1);
@@ -128,5 +152,7 @@ int main() {
   //
   assert(sizeof(mem) > 1);
   run();
+  assert(r[EAX] == 0x0d0c0b0a);
+  assert(r[EBX] == 0x0d0c0b0a);
   return 0;
 }

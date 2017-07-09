@@ -8,12 +8,20 @@
 .section .text
 .globl _start
 _start:
+  # destination comes last
   xor %eax, %eax
-  # surprising that 'add r32, imm32' encodes to
-  #   01 05 <imm32>
-  # rather than
-  #   81 ...
+  # add register to memory address
   add %eax, 0x0a0b0c0d
+  add %ebx, 0x0a0b0c0d
+  # add immediate value to register
+  add $0x0a0b0c0d, %eax
+  add $0x0a0b0c0d, %ebx  # modrm byte is 11_000_011
+  add %ebx, %eax
+  add (%ebx), %eax
+  add %ebx, (%eax)
+  add 3(%ebx), %eax
+  add %ebx, 3(%eax)
+  add -4(%ebp, %edx, 4), %eax
   #
   # exit
   xor %eax, %eax
