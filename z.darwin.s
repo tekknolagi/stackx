@@ -1,7 +1,7 @@
 # I use this file to test out the encoding of various x86 instructions
 # on Mac OS.
 #
-# $ as -arch i386 test.darwin.s -o test.o  &&  objdump --disassemble test.o
+# $ as -arch i386 z.darwin.s -o z.o  &&  objdump --disassemble z.o
 
 # No binary header since we don't use this file for running.
 

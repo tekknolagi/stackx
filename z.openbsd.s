@@ -1,7 +1,7 @@
 # I use this file to test out the encoding of various x86 instructions
 # on OpenBSD.
 #
-# $ as test.openbsd.s -o test.o  &&  objdump --disassemble test.o
+# $ as z.openbsd.s -o z.o  &&  objdump --disassemble z.o
 
 # No binary header since we don't use this file for running.
 
