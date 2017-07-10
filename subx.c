@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "function_list"  // auto-generated function prototypes
+
 //// x86 data structures: registers and memory
 
 enum {
@@ -47,18 +49,23 @@ uint8_t mem[] = {
 
 ////
 
-uint8_t next() {
-  if (EIP >= sizeof(mem)) return /*hlt*/0xf4;
-  return mem[EIP++];
+int main() {
+  // run on a 32-bit system
+  assert(sizeof(int) == 4);
+  assert(sizeof(float) == 4);
+  //
+  assert(sizeof(mem) > 1);
+  run();
+  assert(r[EAX] == 0x0d0c0b0a);
+  assert(r[EBX] == 0x0d0c0b0a);
+  return 0;
 }
 
-// read a 32-bit immediate in little-endian order from the instruction stream
-int imm32() {
-  int result = next();
-  result |= (next()<<8);
-  result |= (next()<<16);
-  result |= (next()<<24);
-  return result;
+void run() {
+  EIP = 0;
+  while (EIP < sizeof(mem)) {
+    run_one_instruction();
+  }
 }
 
 void run_one_instruction() {
@@ -138,21 +145,16 @@ void run_one_instruction() {
   }
 }
 
-void run() {
-  EIP = 0;
-  while (EIP < sizeof(mem)) {
-    run_one_instruction();
-  }
+uint8_t next(void) {
+  if (EIP >= sizeof(mem)) return /*hlt*/0xf4;
+  return mem[EIP++];
 }
 
-int main() {
-  // run on a 32-bit system
-  assert(sizeof(int) == 4);
-  assert(sizeof(float) == 4);
-  //
-  assert(sizeof(mem) > 1);
-  run();
-  assert(r[EAX] == 0x0d0c0b0a);
-  assert(r[EBX] == 0x0d0c0b0a);
-  return 0;
+// read a 32-bit immediate in little-endian order from the instruction stream
+int imm32(void) {
+  int result = next();
+  result |= (next()<<8);
+  result |= (next()<<16);
+  result |= (next()<<24);
+  return result;
 }

@@ -53,7 +53,10 @@ update() {
 
 ## body: things to generate, what they depend on, and how to generate them from their dependencies
 
-older_than subx *.c *.h && {
+# auto-generate a list of function prototypes
+grep -h "^[^ #].*) {" *.c  |sed 's/ {.*/;/'  |update function_list
+
+older_than subx *.c *.h function_list && {
   $CC $CFLAGS *.c -o subx
 }
 
