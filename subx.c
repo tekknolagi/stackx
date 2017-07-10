@@ -1,10 +1,12 @@
-// VM that is a subset of x86
+// SubX: VM modeling a subset of the 32-bit x86 ISA
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <assert.h>
+
+//// x86 data structures: registers and memory
 
 enum {
   EAX,
@@ -42,6 +44,8 @@ uint8_t mem[] = {
   0x81, 0xc3, 0x0a, 0x0b, 0x0c, 0x0d,  // add EBX, 0x0d0c0b0a
   0xf4,  // hlt
 };
+
+////
 
 uint8_t next() {
   if (EIP >= sizeof(mem)) return /*hlt*/0xf4;
@@ -97,10 +101,6 @@ void run_one_instruction() {
       break;
     }
     case 0x01: {  // add r/m32, r32
-      uint8_t modrm = next();
-      uint8_t mod = (modrm>>6);
-      uint8_t reg = (modrm>>3) & 0x7;
-      uint8_t rm = modrm & 0x7;
       break;
     }
     case 0x03:  // add r32, r/m32
