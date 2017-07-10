@@ -1,3 +1,19 @@
+## The SubX (subset of x86) VM
+
+To build:
+
+  ```
+  ./build
+  ```
+
+To run:
+
+  ```
+  ./subx
+  ```
+
+## Compiler
+
 ### Prerequisites:
 
 - [opam](https://opam.ocaml.org/)
