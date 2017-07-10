@@ -6,7 +6,7 @@ To build:
   ./build
   ```
 
-To run:
+To run tests:
 
   ```
   ./subx

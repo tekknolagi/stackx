@@ -56,7 +56,10 @@ update() {
 # auto-generate a list of function prototypes
 grep -h "^[^ #].*) {" *.c  |sed 's/ {.*/;/'  |update function_list
 
-older_than subx *.c *.h function_list && {
+# auto-generate a list of test names
+grep -h "^\s*void test_" *.c  |sed 's/^\s*void \(.*\)(void) {.*/\1,/'  |update test_list
+
+older_than subx *.c *.h function_list test_list && {
   $CC $CFLAGS *.c -o subx
 }
 

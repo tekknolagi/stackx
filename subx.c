@@ -1,10 +1,14 @@
 // SubX: VM modeling a subset of the 32-bit x86 ISA
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+
+#include "test.h"
 
 #include "function_list"  // auto-generated function prototypes
 
@@ -40,30 +44,75 @@ unsigned int EIP = 0;
 // subset of flags
 bool OF=false, ZF=false, SF=false;
 
-uint8_t mem[] = {
-  // program goes here
-  0x05, 0x0a, 0x0b, 0x0c, 0x0d,  // add EAX, 0x0d0c0b0a
-  0x81, 0xc3, 0x0a, 0x0b, 0x0c, 0x0d,  // add EBX, 0x0d0c0b0a
-  0xf4,  // hlt
-};
+uint8_t* mem = NULL;  // simulated memory
+uint32_t mem_size = 0;
 
-////
+//// core VM
 
 int main() {
+  atexit(reset);
   // run on a 32-bit system
   assert(sizeof(int) == 4);
   assert(sizeof(float) == 4);
-  //
-  assert(sizeof(mem) > 1);
-  run();
-  assert(r[EAX] == 0x0d0c0b0a);
-  assert(r[EBX] == 0x0d0c0b0a);
+  // just always run tests for now
+  run_tests();
   return 0;
 }
 
-void run() {
+// clean up at the start of each test, and before exit
+void reset(void) {
+  if (mem != NULL) {
+    free(mem);
+    mem = NULL;
+    mem_size = 0;
+  }
+}
+
+// run_tests() runs all functions starting with 'test_'.
+// all tests should have this structure:
+//   function prototype: void test_...(void)
+//   load_program("some string of bytes in hex separated by spaces"
+//                "one instructions to a line; c will concatenate string literals");
+//   run();
+//   post checks
+void test_add_imm32_to_eax(void) {
+  load_program(
+    // opcodes    modrm     sib       displacement      immediate
+    "05                                                 0a 0b 0c 0d"  // add EAX 0x0d0c0b0a
+  );
+  run();
+  CHECK(r[EAX] == 0x0d0c0b0a);
+}
+
+void load_program(char* prog) {
+  mem_size = word_count(prog);
+  assert(mem == NULL);
+  mem = calloc(mem_size, sizeof(*mem));  // https://stackoverflow.com/questions/19785518/is-dereferencing-null-pointer-valid-in-sizeof-operation
+  assert(mem != NULL);
+  char* curr = prog;
+  char* end = prog + strlen(prog);
+  for (size_t i = 0;  i < mem_size;  ++i) {
+    assert (curr < end);
+    mem[i] = strtol(curr, &curr, /*hex*/16);
+//?     printf("%hhx\n", mem[i]);
+  }
+}
+
+uint32_t word_count(const char* s) {
+  uint32_t result = 0;
+  bool at_space = true;
+  for (;  *s != '\0';  ++s) {
+    bool curr_is_space = isspace(*s);
+    if (at_space && !curr_is_space) ++result;
+    at_space = curr_is_space;
+  }
+//?   printf("word count: %u\n", result);
+  return result;
+}
+
+void run(void) {
   EIP = 0;
-  while (EIP < sizeof(mem)) {
+  while (EIP < mem_size) {
     run_one_instruction();
   }
 }
@@ -136,8 +185,7 @@ void run_one_instruction() {
       }
       break;
     case 0xf4:  // hlt
-      fprintf(stderr, "hlt encountered\n");
-      EIP = sizeof(mem);
+      EIP = mem_size;
       break;
     default:
       fprintf(stderr, "unrecognized opcode: %x\n", mem[EIP-1]);
@@ -146,7 +194,7 @@ void run_one_instruction() {
 }
 
 uint8_t next(void) {
-  if (EIP >= sizeof(mem)) return /*hlt*/0xf4;
+  if (EIP >= mem_size) return /*hlt*/0xf4;
   return mem[EIP++];
 }
 
@@ -157,4 +205,15 @@ int imm32(void) {
   result |= (next()<<16);
   result |= (next()<<24);
   return result;
+}
+
+//// remaining tests
+
+void test_add_imm32_to_r32(void) {
+  load_program(
+    // opcodes    modrm     sib       displacement      immediate
+    "81           c3                                    0a 0b 0c 0d"  // add EBX 0x0d0c0b0a
+  );
+  run();
+  CHECK(r[EBX] == 0x0d0c0b0a);
 }
