@@ -12,6 +12,9 @@
 
 #include "function_list"  // auto-generated function prototypes
 
+// poor man's static_cast
+#define CAST(x, y)  ((x)(y))
+
 //// x86 data structures: registers and memory
 
 enum {
@@ -61,6 +64,10 @@ int main() {
 
 // clean up at the start of each test, and before exit
 void reset(void) {
+  bzero(r, sizeof(r));
+  bzero(xmm, sizeof(xmm));
+  EIP = 0;
+  OF = ZF = SF = false;
   if (mem != NULL) {
     free(mem);
     mem = NULL;
@@ -138,6 +145,17 @@ void run_one_instruction() {
       // Table 2-2 in the Intel manual, Volume 2
       switch (mod) {
         case 0:
+          switch (rm) {
+          default:
+            // mod 0 is usually register addressing
+            effective_address = CAST(int*, &mem[r[rm]]);  // rely on the host itself being in little-endian order
+          case 4:
+            // todo: read SIB byte
+            break;
+          case 5:
+            // todo: read disp32
+            break;
+          }
           break;
         case 1:
           break;
@@ -207,7 +225,7 @@ int imm32(void) {
   return result;
 }
 
-//// remaining tests
+//// more tests
 
 void test_add_imm32_to_r32(void) {
   load_program(
@@ -216,4 +234,20 @@ void test_add_imm32_to_r32(void) {
   );
   run();
   CHECK(r[EBX] == 0x0d0c0b0a);
+}
+
+void test_add_imm32_to_mem_at_r32(void) {
+  // EBX starts out as 0
+  load_program(
+    // opcodes    modrm     sib       displacement      immediate
+    "81           03                                    0a 0b 0c 0d"  // add (EBX), 0x0d0c0b0a
+  );
+  run();
+  // Immediate operands at addresses 2-5 are added to memory locations 0-3.
+  // Self-modifying code! Just to make the test simple, though. I don't
+  // endorse this.
+  CHECK(mem[0] == 0x8b);  // 81 + 0a
+  CHECK(mem[1] == 0x0e);  // 03 + 0b
+  CHECK(mem[2] == 0x16);  // 0a + 0c
+  CHECK(mem[3] == 0x18);  // 0b + 0d
 }

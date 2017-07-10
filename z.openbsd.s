@@ -16,6 +16,7 @@ _start:
   # add immediate value to register
   add $0x0a0b0c0d, %eax
   add $0x0a0b0c0d, %ebx  # modrm byte is 11_000_011
+  addl $0x0a0b0c0d, (%ebx)  # modrm byte is 00_000_011
   add %ebx, %eax
   add (%ebx), %eax
   add %ebx, (%eax)
