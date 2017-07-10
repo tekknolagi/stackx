@@ -19,7 +19,6 @@
 *.out.dSYM
 *.native
 _build
-/tmp/
 *.swp
 *.swo
 
