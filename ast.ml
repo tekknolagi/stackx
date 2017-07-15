@@ -111,6 +111,43 @@ module AST = struct
   type t = program
 end
 
+module type ANNOTATION = sig
+  type t
+  val to_string : t -> string
+end
+
+module AnnotatedAST(A : ANNOTATION) = struct
+  type aexp =
+    | AIntLit of A.t * int
+    | AUnitLit of A.t * unit
+    | ACharLit of A.t * char
+    | ABoolLit of A.t * bool
+    | AVar of A.t * AST.name
+    | ARef of A.t * aexp
+    | ADeref of A.t * aexp
+    | APrefixOper of A.t * AST.op * aexp
+    | AInfixOper of A.t * AST.op * aexp * aexp
+    | AFuncall of A.t * aexp * aexp list
+    | ASetEq of A.t * AST.name * aexp
+
+  let rec string_of_aexp = function
+    | AIntLit (a, i) -> string_of_int i ^ " : " ^ A.to_string a
+    | AUnitLit (a, _) -> "()" ^ A.to_string a
+    | ACharLit (a, c) -> "'" ^ String.make 1 c ^ "' : " ^ A.to_string a
+    | ABoolLit (a, b) -> string_of_bool b ^ " : " ^ A.to_string a
+    | AVar (a, n) -> n ^ " : " ^ A.to_string a
+    | ARef (a, e) -> "&" ^ s e ^ " : " ^ A.to_string a
+    | ADeref (a, e) -> "*" ^ s e ^ " : " ^ A.to_string a
+    | APrefixOper (a, o, e) -> AST.string_of_op o ^ s e ^ " : " ^ A.to_string a
+    | AInfixOper (a, o, e1, e2) -> 
+        s e1 ^ AST.string_of_op o ^ s e2 ^ " : " ^ A.to_string a
+    | AFuncall (a, f, es) ->
+        "(" ^ s f ^ ")(" ^ (String.concat "," @@  List.map s es) ^ ")"
+    | ASetEq (a, n, e) ->
+        n ^ " = " ^ s e ^ " : " ^ A.to_string a
+  and s = string_of_aexp
+end
+
 let const_eval defs =
   let open AST in
   let binint = function
