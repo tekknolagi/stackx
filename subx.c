@@ -96,6 +96,8 @@ void test_add_imm32_to_eax(void) {
   CHECK(r[EAX].u == 0x0d0c0b0a);
 }
 
+// load the given space-separated sequence of hex bytes into `mem` starting at
+// address 0.
 void load_program(char* prog) {
   mem_size = word_count(prog);
   assert(mem == NULL);
@@ -166,7 +168,15 @@ void run_one_instruction() {
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
       int32_t arg2 = imm32();
-      PERFORM_ARITHMETIC_BINOP(+, *arg1, arg2);
+      uint8_t subop = (modrm>>3)&0x7;
+      switch (subop) {
+        case 0:
+          PERFORM_ARITHMETIC_BINOP(+, *arg1, arg2);
+          break;
+        case 5:
+          PERFORM_ARITHMETIC_BINOP(-, *arg1, arg2);
+          break;
+      }
       break;
     }
     case 0xf3:  // escape
@@ -244,6 +254,8 @@ int32_t* effective_address(uint8_t modrm) {
 
 //// more tests
 
+// test_add_imm32_to_eax is above as the example test
+
 // add with mod = 11 (register direct mode)
 void test_add_imm32_to_r32(void) {
   load_program(
@@ -269,4 +281,33 @@ void test_add_imm32_to_mem_at_r32(void) {
   CHECK(mem[1] == 0x0e);  // 03 + 0b
   CHECK(mem[2] == 0x16);  // 0a + 0c
   CHECK(mem[3] == 0x18);  // 0b + 0d
+}
+
+// subtract with mod = 11 (register direct mode)
+void test_sub_imm32_to_r32(void) {
+  load_program(
+    // opcodes    modrm     sib       displacement      immediate
+    "81           eb                                    01 00 00 00"  // sub EBX, 0x01
+  );
+  run();
+  CHECK(r[EBX].u == 0xffffffff);  // -1
+}
+
+// subtract with mod = 00 (register indirect mode)
+void test_sub_imm32_to_mem_at_r32(void) {
+  // EBX starts out as 0
+  load_program(
+    // opcodes    modrm     sib       displacement      immediate
+    "81           2b                                    01 00 00 00"  // sub (EBX), 0x01
+  );
+  run();
+  // Immediate operands at addresses 2-5 are subtracted from memory locations
+  // 0-3. Self-modifying code! Just to make the test simple, though. I don't
+  // endorse this.
+  CHECK(mem[0] == 0x80);  // 81 - 1
+  CHECK(mem[1] == 0x2b);  // unchanged
+  CHECK(mem[2] == 0x01);  // unchanged
+  CHECK(mem[3] == 0x00);  // unchanged
+  CHECK(mem[4] == 0x00);  // unchanged
+  CHECK(mem[5] == 0x00);  // unchanged
 }
