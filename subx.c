@@ -150,11 +150,7 @@ void run_one_instruction() {
       break;
     case 0x05: {  // add EAX, imm32
       int32_t arg2 = imm32();
-      int64_t tmp = r[EAX].i + arg2;
-      r[EAX].i += arg2;
-      SF = (r[EAX].i < 0);
-      ZF = (r[EAX].i == 0);
-      OF = (r[EAX].i != tmp);
+      PERFORM_ARITHMETIC_BINOP(+, r[EAX].i, arg2);
       break;
     }
     case 0x0f:  // escape
