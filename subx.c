@@ -48,7 +48,7 @@ typedef union {
 
 reg r[NUM_INT_REGISTERS] = { {0} };
 float xmm[NUM_FLOAT_REGISTERS] = {0};
-unsigned int EIP = 0;
+uint32_t EIP = 0;
 // subset of flags
 bool OF=false, ZF=false, SF=false;
 
@@ -155,7 +155,7 @@ void run_one_instruction() {
     case 0x81: {  // add r/m32, imm32
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
-      int arg2 = imm32();
+      int32_t arg2 = imm32();
       int64_t tmp = *arg1 + arg2;
       *arg1 += arg2;
       SF = (*arg1 < 0);
@@ -194,8 +194,8 @@ uint8_t next(void) {
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
-int imm32(void) {
-  int result = next();
+int32_t imm32(void) {
+  int32_t result = next();
   result |= (next()<<8);
   result |= (next()<<16);
   result |= (next()<<24);
