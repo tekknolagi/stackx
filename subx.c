@@ -129,6 +129,16 @@ void run(void) {
   }
 }
 
+// beware: no side-effects in args
+#define PERFORM_ARITHMETIC_BINOP(op, arg1, arg2) { \
+  /* arg1 and arg2 must be signed */ \
+  int64_t tmp = arg1 op arg2; \
+  arg1 = arg1 op arg2; \
+  SF = (arg1 < 0); \
+  ZF = (arg1 == 0); \
+  OF = (arg1 != tmp); \
+}
+
 void run_one_instruction() {
   switch (next()) {
     case 0x01: {  // add r/m32, r32
@@ -156,11 +166,7 @@ void run_one_instruction() {
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
       int32_t arg2 = imm32();
-      int64_t tmp = *arg1 + arg2;
-      *arg1 += arg2;
-      SF = (*arg1 < 0);
-      ZF = (*arg1 == 0);
-      OF = (*arg1 != tmp);
+      PERFORM_ARITHMETIC_BINOP(+, *arg1, arg2);
       break;
     }
     case 0xf3:  // escape
