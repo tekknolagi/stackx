@@ -249,12 +249,14 @@ int32_t* effective_address(uint8_t modrm) {
   return result;
 }
 
-//// more tests
+//// === more tests
+
+//// add
 
 // test_add_imm32_to_eax is above as the example test
 
 // add with mod = 11 (register direct mode)
-void test_add_imm32_to_r32(void) {
+void test_add_imm32_to_rm32(void) {
   load_program(
     // opcodes    modrm     sib       displacement      immediate
     "81           c3                                    0a 0b 0c 0d"  // add EBX 0x0d0c0b0a
@@ -264,7 +266,7 @@ void test_add_imm32_to_r32(void) {
 }
 
 // add with mod = 00 (register indirect mode)
-void test_add_imm32_to_mem_at_r32(void) {
+void test_add_imm32_to_mem_at_rm32(void) {
   // EBX starts out as 0
   load_program(
     // opcodes    modrm     sib       displacement      immediate
@@ -280,8 +282,10 @@ void test_add_imm32_to_mem_at_r32(void) {
   CHECK(mem[3] == 0x18);  // 0b + 0d
 }
 
+//// sub
+
 // subtract with mod = 11 (register direct mode)
-void test_sub_imm32_to_r32(void) {
+void test_sub_imm32_to_rm32(void) {
   load_program(
     // opcodes    modrm     sib       displacement      immediate
     "81           eb                                    01 00 00 00"  // sub EBX, 0x01
@@ -291,7 +295,7 @@ void test_sub_imm32_to_r32(void) {
 }
 
 // subtract with mod = 00 (register indirect mode)
-void test_sub_imm32_to_mem_at_r32(void) {
+void test_sub_imm32_to_mem_at_rm32(void) {
   // EBX starts out as 0
   load_program(
     // opcodes    modrm     sib       displacement      immediate
