@@ -154,40 +154,13 @@ void run_one_instruction() {
       break;
     case 0x81: {  // add r/m32, imm32
       uint8_t modrm = next();
-      uint8_t mod = (modrm>>6);
-      // ignore middle 3 'reg opcode' bits
-      uint8_t rm = modrm & 0x7;
-      int32_t* effective_address = 0;
-      // Table 2-2 in the Intel manual, Volume 2
-      switch (mod) {
-        case 0:
-          switch (rm) {
-          default:
-            // mod 0 is usually register addressing
-            effective_address = CAST(int*, &mem[r[rm].u]);  // rely on the host itself being in little-endian order
-          case 4:
-            // todo: read SIB byte
-            break;
-          case 5:
-            // todo: read disp32
-            break;
-          }
-          break;
-        case 1:
-          break;
-        case 2:
-          break;
-        case 3:
-          // operand 1 is just the contents of the rm register
-          effective_address = &r[rm].i;
-          break;
-      }
+      int32_t* arg1 = effective_address(modrm);
       int arg2 = imm32();
-      int64_t tmp = *effective_address + arg2;
-      *effective_address += arg2;
-      SF = (*effective_address < 0);
-      ZF = (*effective_address == 0);
-      OF = (*effective_address != tmp);
+      int64_t tmp = *arg1 + arg2;
+      *arg1 += arg2;
+      SF = (*arg1 < 0);
+      ZF = (*arg1 == 0);
+      OF = (*arg1 != tmp);
       break;
     }
     case 0xf3:  // escape
@@ -226,6 +199,40 @@ int imm32(void) {
   result |= (next()<<8);
   result |= (next()<<16);
   result |= (next()<<24);
+  return result;
+}
+
+// Implement tables 2-2 and 2-3 in the Intel manual, Volume 2.
+int32_t* effective_address(uint8_t modrm) {
+  uint8_t mod = (modrm>>6);
+  // ignore middle 3 'reg opcode' bits
+  uint8_t rm = modrm & 0x7;
+  int32_t* result = 0;
+  switch (mod) {
+    case 0:
+      // mod 0 is usually indirect addressing
+      switch (rm) {
+      default:
+        assert(r[rm].u + sizeof(int32_t) <= mem_size);
+        result = CAST(int32_t*, &mem[r[rm].u]);  // rely on the host itself being in little-endian order
+        break;
+      case 4:
+        // todo: read SIB byte
+        break;
+      case 5:
+        // todo: read disp32
+        break;
+      }
+      break;
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      // operand 1 is just the contents of the rm register
+      result = &r[rm].i;
+      break;
+  }
   return result;
 }
 
