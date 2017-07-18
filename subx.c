@@ -41,7 +41,12 @@ enum {
   NUM_FLOAT_REGISTERS,
 };
 
-int r[NUM_INT_REGISTERS] = {0};
+typedef union {
+  int32_t i;
+  uint32_t u;
+} reg;
+
+reg r[NUM_INT_REGISTERS] = { {0} };
 float xmm[NUM_FLOAT_REGISTERS] = {0};
 unsigned int EIP = 0;
 // subset of flags
@@ -88,7 +93,7 @@ void test_add_imm32_to_eax(void) {
     "05                                                 0a 0b 0c 0d"  // add EAX 0x0d0c0b0a
   );
   run();
-  CHECK(r[EAX] == 0x0d0c0b0a);
+  CHECK(r[EAX].u == 0x0d0c0b0a);
 }
 
 void load_program(char* prog) {
@@ -127,12 +132,12 @@ void run(void) {
 void run_one_instruction() {
   switch (next()) {
     case 0x05: {  // add EAX, imm32
-      int arg2 = imm32();
-      int64_t tmp = r[EAX] + arg2;
-      r[EAX] += arg2;
-      SF = (r[EAX] < 0);
-      ZF = (r[EAX] == 0);
-      OF = (r[EAX] != tmp);
+      int32_t arg2 = imm32();
+      int64_t tmp = r[EAX].i + arg2;
+      r[EAX].i += arg2;
+      SF = (r[EAX].i < 0);
+      ZF = (r[EAX].i == 0);
+      OF = (r[EAX].i != tmp);
       break;
     }
     case 0x81: {  // add r/m32, imm32
@@ -141,14 +146,14 @@ void run_one_instruction() {
       uint8_t mod = (modrm>>6);
       // ignore middle 3 'reg opcode' bits
       uint8_t rm = modrm & 0x7;
-      int* effective_address = 0;
+      int32_t* effective_address = 0;
       // Table 2-2 in the Intel manual, Volume 2
       switch (mod) {
         case 0:
           switch (rm) {
           default:
             // mod 0 is usually register addressing
-            effective_address = CAST(int*, &mem[r[rm]]);  // rely on the host itself being in little-endian order
+            effective_address = CAST(int*, &mem[r[rm].u]);  // rely on the host itself being in little-endian order
           case 4:
             // todo: read SIB byte
             break;
@@ -163,7 +168,7 @@ void run_one_instruction() {
           break;
         case 3:
           // operand 1 is just the contents of the rm register
-          effective_address = &r[rm];
+          effective_address = &r[rm].i;
           break;
       }
       int arg2 = imm32();
@@ -233,7 +238,7 @@ void test_add_imm32_to_r32(void) {
     "81           c3                                    0a 0b 0c 0d"  // add EBX 0x0d0c0b0a
   );
   run();
-  CHECK(r[EBX] == 0x0d0c0b0a);
+  CHECK(r[EBX].u == 0x0d0c0b0a);
 }
 
 void test_add_imm32_to_mem_at_r32(void) {
