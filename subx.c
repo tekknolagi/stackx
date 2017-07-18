@@ -12,7 +12,7 @@
 
 #include "function_list"  // auto-generated function prototypes
 
-// poor man's static_cast
+// make type coercions easier to spot
 #define CAST(x, y)  ((x)(y))
 
 //// x86 data structures: registers and memory
@@ -141,7 +141,6 @@ void run_one_instruction() {
       break;
     }
     case 0x81: {  // add r/m32, imm32
-      // test case: add %eax, 0xd => 01 05 00 00 00
       uint8_t modrm = next();
       uint8_t mod = (modrm>>6);
       // ignore middle 3 'reg opcode' bits
@@ -232,6 +231,7 @@ int imm32(void) {
 
 //// more tests
 
+// add with mod = 11 (register direct mode)
 void test_add_imm32_to_r32(void) {
   load_program(
     // opcodes    modrm     sib       displacement      immediate
@@ -241,6 +241,7 @@ void test_add_imm32_to_r32(void) {
   CHECK(r[EBX].u == 0x0d0c0b0a);
 }
 
+// add with mod = 00 (register indirect mode)
 void test_add_imm32_to_mem_at_r32(void) {
   // EBX starts out as 0
   load_program(
