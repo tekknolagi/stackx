@@ -131,6 +131,11 @@ void run(void) {
 
 void run_one_instruction() {
   switch (next()) {
+    case 0x01: {  // add r/m32, r32
+      break;
+    }
+    case 0x03:  // add r32, r/m32
+      break;
     case 0x05: {  // add EAX, imm32
       int32_t arg2 = imm32();
       int64_t tmp = r[EAX].i + arg2;
@@ -140,6 +145,13 @@ void run_one_instruction() {
       OF = (r[EAX].i != tmp);
       break;
     }
+    case 0x0f:  // escape
+      switch(next()) {
+        default:
+          fprintf(stderr, "unrecognized second opcode after 0x0f: %x\n", mem[EIP-1]);
+          exit(1);
+      }
+      break;
     case 0x81: {  // add r/m32, imm32
       uint8_t modrm = next();
       uint8_t mod = (modrm>>6);
@@ -178,18 +190,6 @@ void run_one_instruction() {
       OF = (*effective_address != tmp);
       break;
     }
-    case 0x01: {  // add r/m32, r32
-      break;
-    }
-    case 0x03:  // add r32, r/m32
-      break;
-    case 0x0f:  // escape
-      switch(next()) {
-        default:
-          fprintf(stderr, "unrecognized second opcode after 0x0f: %x\n", mem[EIP-1]);
-          exit(1);
-      }
-      break;
     case 0xf3:  // escape
       switch(next()) {
         case 0x0f:  // escape
