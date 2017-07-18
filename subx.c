@@ -146,8 +146,9 @@ void run_one_instruction() {
     case 0x01: {  // add r/m32, r32
       break;
     }
-    case 0x03:  // add r32, r/m32
+    case 0x03: {  // add r32, r/m32
       break;
+    }
     case 0x05: {  // add EAX, imm32
       int32_t arg2 = imm32();
       PERFORM_ARITHMETIC_BINOP(+, r[EAX].i, arg2);
@@ -200,13 +201,13 @@ void run_one_instruction() {
   }
 }
 
-uint8_t next(void) {
+inline uint8_t next(void) {
   if (EIP >= mem_size) return /*hlt*/0xf4;
   return mem[EIP++];
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
-int32_t imm32(void) {
+inline int32_t imm32(void) {
   int32_t result = next();
   result |= (next()<<8);
   result |= (next()<<16);
