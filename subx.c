@@ -142,6 +142,14 @@ void run(void) {
   OF = (arg1 != tmp); \
 }
 
+#define PERFORM_BITWISE_BINOP(op, arg1, arg2) { \
+  /* arg1 and arg2 must be unsigned */ \
+  arg1 = arg1 op arg2; \
+  SF = (arg1 >> 31); \
+  ZF = (arg1 == 0); \
+  OF = false; \
+}
+
 void run_one_instruction() {
   switch (next()) {
     case 0x01: {  // add r/m32, r32
@@ -170,26 +178,46 @@ void run_one_instruction() {
           exit(1);
       }
       break;
+    case 0x21: {  // and r/m32, r32
+      uint8_t modrm = next();
+      int32_t* arg1 = CAST(uint32_t*, effective_address(modrm));
+      uint8_t arg2 = (modrm>>3)&0x7;
+      PERFORM_BITWISE_BINOP(&, *arg1, r[arg2].u);
+      break;
+    }
+    case 0x23: {  // and r32, r/m32
+      uint8_t modrm = next();
+      const uint32_t* arg2 = CAST(const uint32_t*, effective_address(modrm));
+      uint8_t arg1 = (modrm>>3)&0x7;
+      PERFORM_BITWISE_BINOP(&, r[arg1].u, *arg2);
+      break;
+    }
+    case 0x25: {  // and EAX, imm32
+      uint32_t* arg1 = &r[EAX].u;
+      uint32_t arg2 = CAST(uint32_t, imm32());
+      PERFORM_BITWISE_BINOP(&, *arg1, arg2);
+      break;
+    }
     case 0x29: {  // sub r/m32, r32
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
-      int arg2 = (modrm>>3)&0x7;
+      uint8_t arg2 = (modrm>>3)&0x7;
       PERFORM_ARITHMETIC_BINOP(-, *arg1, r[arg2].i);
       break;
     }
     case 0x2b: {  // sub r32, r/m32
       uint8_t modrm = next();
       const int32_t* arg2 = effective_address(modrm);
-      int arg1 = (modrm>>3)&0x7;
+      uint8_t arg1 = (modrm>>3)&0x7;
       PERFORM_ARITHMETIC_BINOP(-, r[arg1].i, *arg2);
       break;
     }
     case 0x2d: {  // sub EAX, imm32
-      int arg2 = imm32();
+      int32_t arg2 = imm32();
       PERFORM_ARITHMETIC_BINOP(-, r[EAX].i, arg2);
       break;
     }
-    case 0x81: {  // add r/m32, imm32
+    case 0x81: {  // combine r/m32 with imm32
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
       int32_t arg2 = imm32();
@@ -198,6 +226,12 @@ void run_one_instruction() {
         case 0:
           PERFORM_ARITHMETIC_BINOP(+, *arg1, arg2);
           break;
+        case 4: {
+          uint32_t* uarg1 = CAST(uint32_t*, arg1);
+          uint32_t uarg2 = CAST(uint32_t, arg2);
+          PERFORM_BITWISE_BINOP(&, *uarg1, uarg2);
+          break;
+        }
         case 5:
           PERFORM_ARITHMETIC_BINOP(-, *arg1, arg2);
           break;
@@ -399,4 +433,72 @@ void test_sub_rm32_from_r32(void) {
   );
   run();
   CHECK(r[EBX].u == 0x1);
+}
+
+//// and
+
+// and immediate with EAX
+void test_and_imm32_with_eax(void) {
+  r[EAX].u = 0x0d0c4080;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "25                                                 0a 0b 0c 0d "  // and EAX, 0x0d0c0b0a
+  );
+  run();
+  CHECK(r[EAX].u == 0x0d0c0000);
+}
+
+// and immediate with mod = 11 (register direct mode)
+void test_and_imm32_with_rm32(void) {
+  r[EBX].u = 0x0a0b0c03;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "81           e3                                    02 00 00 00 "  // and EBX, 0x02
+  );
+  run();
+  CHECK(r[EBX].u == 0x2);
+}
+
+// and immediate with mod = 00 (register indirect mode)
+void test_and_imm32_with_mem_at_rm32(void) {
+  // EBX starts out as 0
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "81           23                                    f0 00 00 00 "  // and (EBX), 0xf0
+  );
+  run();
+  // Immediate operands at addresses 2-5 are subtracted from memory locations
+  // 0-3. Self-modifying code! Just to make the test simple, though. I don't
+  // endorse this.
+  CHECK(mem[0] == 0x80);  // 81 & f0
+  CHECK(mem[1] == 0x00);  // clear
+  CHECK(mem[2] == 0x00);  // clear
+  CHECK(mem[3] == 0x00);  // unchanged
+  CHECK(mem[4] == 0x00);  // unchanged
+  CHECK(mem[5] == 0x00);  // unchanged
+}
+
+void test_and_r32_with_rm32(void) {
+  r[EBX].u = 0xffff0010;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "21           18 "  // and (EAX), EBX
+    "90 90"  // padding
+  );
+  run();
+  CHECK(mem[0] == 0x00);  // 0x21 & 0x10
+  CHECK(mem[1] == 0x00);  // 0x18 & 0x00
+  CHECK(mem[2] == 0x90);  // 0x90 & 0xff
+  CHECK(mem[3] == 0x90);  // 0x90 & 0xff
+}
+
+void test_and_rm32_with_r32(void) {
+  r[EBX].u = 0x9090182c;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "23           18 "  // and EBX, (EAX)
+    "90 90"  // padding
+  );
+  run();
+  CHECK(r[EBX].u == 0x90901820);  // LSB 0x23 & 0x2c
 }
