@@ -201,13 +201,13 @@ void run_one_instruction() {
   }
 }
 
-inline uint8_t next(void) {
+uint8_t next(void) {
   if (EIP >= mem_size) return /*hlt*/0xf4;
   return mem[EIP++];
 }
 
 // read a 32-bit immediate in little-endian order from the instruction stream
-inline int32_t imm32(void) {
+int32_t imm32(void) {
   int32_t result = next();
   result |= (next()<<8);
   result |= (next()<<16);

@@ -54,7 +54,7 @@ update() {
 ## body: things to generate, what they depend on, and how to generate them from their dependencies
 
 # auto-generate a list of function prototypes
-grep -h "^[^ #].*) {" *.c  |sed 's/ {.*/;/'  |sed 's/^inline //'  |update function_list
+grep -h "^[^ #].*) {" *.c  |sed 's/ {.*/;/'  |update function_list
 
 # auto-generate a list of test names
 grep -h "^\s*void test_" *.c  |sed 's/^\s*void \(.*\)(void) {.*/\1,/'  |update test_list
