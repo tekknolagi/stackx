@@ -89,7 +89,7 @@ void reset(void) {
 //   post checks
 void test_add_imm32_to_eax(void) {
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
+    // opcode     modrm     sib       displacement      immediate
     "05                                                 0a 0b 0c 0d "  // add EAX 0x0d0c0b0a
   );
   run();
@@ -151,6 +151,10 @@ void run_one_instruction() {
       break;
     }
     case 0x03: {  // add r32, r/m32
+      uint8_t modrm = next();
+      const int32_t* arg2 = effective_address(modrm);
+      uint8_t arg1 = (modrm>>3)&0x7;
+      PERFORM_ARITHMETIC_BINOP(+, r[arg1].i, *arg2);
       break;
     }
     case 0x05: {  // add EAX, imm32
@@ -232,6 +236,7 @@ int32_t* effective_address(uint8_t modrm) {
       // mod 0 is usually indirect addressing
       switch (rm) {
       default:
+//?         printf("%hhx %u %u\n", rm, r[rm].u, mem_size);
         assert(r[rm].u + sizeof(int32_t) <= mem_size);
         result = CAST(int32_t*, &mem[r[rm].u]);  // rely on the host itself being in little-endian order
         break;
@@ -264,7 +269,7 @@ int32_t* effective_address(uint8_t modrm) {
 // add with mod = 11 (register direct mode)
 void test_add_imm32_to_rm32(void) {
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
+    // opcode     modrm     sib       displacement      immediate
     "81           c3                                    0a 0b 0c 0d "  // add EBX, 0x0d0c0b0a
   );
   run();
@@ -275,7 +280,7 @@ void test_add_imm32_to_rm32(void) {
 void test_add_imm32_to_mem_at_rm32(void) {
   // EBX starts out as 0
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
+    // opcode     modrm     sib       displacement      immediate
     "81           03                                    0a 0b 0c 0d "  // add (EBX), 0x0d0c0b0a
   );
   run();
@@ -291,8 +296,8 @@ void test_add_imm32_to_mem_at_rm32(void) {
 void test_add_r32_to_rm32(void) {
   r[EBX].u = 0x10;
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
-    "01           18 "  // add EBX, (EAX)
+    // opcode     modrm     sib       displacement      immediate
+    "01           18 "  // add (EAX), EBX
     "90 90"  // padding
   );
   run();
@@ -302,12 +307,23 @@ void test_add_r32_to_rm32(void) {
   CHECK(mem[3] == 0x90);  // unchanged
 }
 
+void test_add_rm32_to_r32(void) {
+  r[EBX].u = 0x01;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "03           18 "  // add EBX, (EAX)
+    "90 90"  // padding
+  );
+  run();
+  CHECK(r[EBX].u == 0x90901804);
+}
+
 //// sub
 
 // subtract with mod = 11 (register direct mode)
 void test_sub_imm32_to_rm32(void) {
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
+    // opcode     modrm     sib       displacement      immediate
     "81           eb                                    01 00 00 00 "  // sub EBX, 0x01
   );
   run();
@@ -318,7 +334,7 @@ void test_sub_imm32_to_rm32(void) {
 void test_sub_imm32_to_mem_at_rm32(void) {
   // EBX starts out as 0
   load_program(
-    // opcodes    modrm     sib       displacement      immediate
+    // opcode     modrm     sib       displacement      immediate
     "81           2b                                    01 00 00 00 "  // sub (EBX), 0x01
   );
   run();
