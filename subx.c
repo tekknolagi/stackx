@@ -96,7 +96,7 @@ void test_add_imm32_to_eax(void) {
   CHECK(r[EAX].u == 0x0d0c0b0a);
 }
 
-// load the given space-separated sequence of hex bytes into `mem` starting at
+// load the given space-separated series of hex bytes into `mem` starting at
 // address 0.
 void load_program(char* prog) {
   mem_size = word_count(prog);
