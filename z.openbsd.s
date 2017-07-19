@@ -1,7 +1,9 @@
 # I use this file to test out the encoding of various x86 instructions
 # on OpenBSD.
 #
-# $ as z.openbsd.s -o z.o  &&  objdump --disassemble z.o
+# $ as z.openbsd.s -o z.o  &&  objdump --disassemble -Mintel z.o
+#
+# -Mintel ensures destination is printed first in each instruction
 
 # No binary header since we don't use this file for running.
 
@@ -20,6 +22,7 @@ _start:
   add %ebx, %eax
   add (%ebx), %eax
   add %ebx, (%eax)
+  sub (%ebx), %eax
   add 3(%ebx), %eax
   add %ebx, 3(%eax)
   add -4(%ebp, %edx, 4), %eax
