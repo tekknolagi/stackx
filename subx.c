@@ -87,6 +87,7 @@ void reset(void) {
 //                "one instructions to a line; c will concatenate string literals");
 //   run();
 //   post checks
+// First test: add immediate to EAX
 void test_add_imm32_to_eax(void) {
   load_program(
     // opcode     modrm     sib       displacement      immediate
@@ -339,7 +340,7 @@ void test_add_rm32_to_r32(void) {
 
 //// sub
 
-void test_sub_imm32_to_eax(void) {
+void test_sub_imm32_from_eax(void) {
   load_program(
     // opcode     modrm     sib       displacement      immediate
     "2d                                                 0a 0b 0c 0d "  // sub EAX, 0x0d0c0b0a
@@ -348,8 +349,7 @@ void test_sub_imm32_to_eax(void) {
   CHECK(r[EAX].u == CAST(uint32_t, -0x0d0c0b0a));
 }
 
-// subtract with mod = 11 (register direct mode)
-void test_sub_imm32_to_rm32(void) {
+void test_sub_imm32_from_rm32(void) {
   load_program(
     // opcode     modrm     sib       displacement      immediate
     "81           eb                                    01 00 00 00 "  // sub EBX, 0x01
@@ -358,8 +358,7 @@ void test_sub_imm32_to_rm32(void) {
   CHECK(r[EBX].u == 0xffffffff);  // -1
 }
 
-// subtract with mod = 00 (register indirect mode)
-void test_sub_imm32_to_mem_at_rm32(void) {
+void test_sub_imm32_from_mem_at_rm32(void) {
   // EBX starts out as 0
   load_program(
     // opcode     modrm     sib       displacement      immediate
@@ -377,7 +376,7 @@ void test_sub_imm32_to_mem_at_rm32(void) {
   CHECK(mem[5] == 0x00);  // unchanged
 }
 
-void test_sub_r32_to_rm32(void) {
+void test_sub_r32_from_rm32(void) {
   r[EBX].u = 0x10;
   load_program(
     // opcode     modrm     sib       displacement      immediate
@@ -391,7 +390,7 @@ void test_sub_r32_to_rm32(void) {
   CHECK(mem[3] == 0x90);  // unchanged
 }
 
-void test_sub_rm32_to_r32(void) {
+void test_sub_rm32_from_r32(void) {
   r[EBX].u = 0x9090182c;
   load_program(
     // opcode     modrm     sib       displacement      immediate
