@@ -90,7 +90,7 @@ void reset(void) {
 void test_add_imm32_to_eax(void) {
   load_program(
     // opcode     modrm     sib       displacement      immediate
-    "05                                                 0a 0b 0c 0d "  // add EAX 0x0d0c0b0a
+    "05                                                 0a 0b 0c 0d "  // add EAX, 0x0d0c0b0a
   );
   run();
   CHECK(r[EAX].u == 0x0d0c0b0a);
@@ -169,6 +169,25 @@ void run_one_instruction() {
           exit(1);
       }
       break;
+    case 0x29: {  // sub r/m32, r32
+      uint8_t modrm = next();
+      int32_t* arg1 = effective_address(modrm);
+      int arg2 = (modrm>>3)&0x7;
+      PERFORM_ARITHMETIC_BINOP(-, *arg1, r[arg2].i);
+      break;
+    }
+    case 0x2b: {  // sub r32, r/m32
+      uint8_t modrm = next();
+      const int32_t* arg2 = effective_address(modrm);
+      int arg1 = (modrm>>3)&0x7;
+      PERFORM_ARITHMETIC_BINOP(-, r[arg1].i, *arg2);
+      break;
+    }
+    case 0x2d: {  // sub EAX, imm32
+      int arg2 = imm32();
+      PERFORM_ARITHMETIC_BINOP(-, r[EAX].i, arg2);
+      break;
+    }
     case 0x81: {  // add r/m32, imm32
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
@@ -320,6 +339,15 @@ void test_add_rm32_to_r32(void) {
 
 //// sub
 
+void test_sub_imm32_to_eax(void) {
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "2d                                                 0a 0b 0c 0d "  // sub EAX, 0x0d0c0b0a
+  );
+  run();
+  CHECK(r[EAX].u == CAST(uint32_t, -0x0d0c0b0a));
+}
+
 // subtract with mod = 11 (register direct mode)
 void test_sub_imm32_to_rm32(void) {
   load_program(
@@ -347,4 +375,29 @@ void test_sub_imm32_to_mem_at_rm32(void) {
   CHECK(mem[3] == 0x00);  // unchanged
   CHECK(mem[4] == 0x00);  // unchanged
   CHECK(mem[5] == 0x00);  // unchanged
+}
+
+void test_sub_r32_to_rm32(void) {
+  r[EBX].u = 0x10;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "29           18 "  // sub (EAX), EBX
+    "90 90"  // padding
+  );
+  run();
+  CHECK(mem[0] == 0x19);  // 0x29 - 0x10
+  CHECK(mem[1] == 0x18);  // unchanged
+  CHECK(mem[2] == 0x90);  // unchanged
+  CHECK(mem[3] == 0x90);  // unchanged
+}
+
+void test_sub_rm32_to_r32(void) {
+  r[EBX].u = 0x9090182c;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "2b           18 "  // sub EBX, (EAX)
+    "90 90"  // padding
+  );
+  run();
+  CHECK(r[EBX].u == 0x1);
 }
