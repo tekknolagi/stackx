@@ -311,6 +311,19 @@ void run_one_instruction() {
     case 0xf4:  // hlt
       EIP = mem_size;
       break;
+    case 0xf7: {  // unary op on r/m32
+      uint8_t modrm = next();
+      int32_t* arg = effective_address(modrm);
+      uint8_t subop = (modrm>>3)&0x7;
+      switch (subop) {
+        case 2: {
+          uint32_t* uarg = CAST(uint32_t*, arg);
+          *uarg = (~ (*uarg));
+          break;
+        }
+      }
+      break;
+    }
     default:
       fprintf(stderr, "unrecognized opcode: %x\n", mem[EIP-1]);
       exit(1);
@@ -711,4 +724,16 @@ void test_xor_reflexive_2(void) {
   );
   run();
   CHECK(r[EAX].u == 0);
+}
+
+//// not
+
+void test_not_rm32(void) {
+  r[EBX].u = 0x000000f0;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "f7           d3 "  // not EBX
+  );
+  run();
+  CHECK(r[EBX].u == 0xffffff0f);
 }
