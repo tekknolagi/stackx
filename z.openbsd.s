@@ -7,29 +7,30 @@
 
 # No binary header since we don't use this file for running.
 
+.intel_syntax
 .section .text
 .globl _start
 _start:
   # destination comes last
   xor %eax, %eax
   # add register to memory address
-  add %eax, 0x0a0b0c0d
-  add %ebx, 0x0a0b0c0d
+  add [0x0a0b0c0d], %eax
+  add [0x0a0b0c0d], %ebx
   # add immediate value to register
-  add $0x0a0b0c0d, %eax
-  add $0x0a0b0c0d, %ebx  # modrm byte is 11_000_011
-  addl $0x0a0b0c0d, (%ebx)  # modrm byte is 00_000_011
-  add %ebx, %eax
-  add (%eax), %ebx
-  add %ebx, (%eax)
-  sub (%ebx), %eax
-  add 3(%ebx), %eax
-  add %ebx, 3(%eax)
-  add -4(%ebp, %edx, 4), %eax
+  add %eax, dword ptr 0x0a0b0c0d
+  add %ebx, dword ptr 0x0a0b0c0d  # modrm byte is 11_000_011
+  add [%ebx], dword ptr 0x0a0b0c0d  # modrm byte is 00_000_011
+  add %eax, %ebx
+  add %ebx, [%eax]
+  add [%eax], %ebx
+  sub %eax, [%ebx]
+  add %eax, [%ebx+3]
+  add [%eax+3], %ebx
+  add %eax, [%ebp+%edx*4-4]
   #
   # exit
   xor %eax, %eax
   push %eax  # exit status
   push %eax  # extra long for C ABI
-  mov $1, %eax  # exit syscall
-  int $0x80
+  mov %eax, 0x1  # exit syscall
+  int 0x80
