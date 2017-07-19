@@ -200,7 +200,7 @@ void run_one_instruction() {
       break;
     case 0x21: {  // and r/m32, r32
       uint8_t modrm = next();
-      int32_t* arg1 = CAST(uint32_t*, effective_address(modrm));
+      uint32_t* arg1 = CAST(uint32_t*, effective_address(modrm));
       uint8_t arg2 = (modrm>>3)&0x7;
       PERFORM_BITWISE_BINOP(&, *arg1, r[arg2].u);
       break;
@@ -237,6 +237,26 @@ void run_one_instruction() {
       PERFORM_ARITHMETIC_BINOP(-, r[EAX].i, arg2);
       break;
     }
+    case 0x31: {  // xor r/m32, r32
+      uint8_t modrm = next();
+      uint32_t* arg1 = CAST(uint32_t*, effective_address(modrm));
+      uint8_t arg2 = (modrm>>3)&0x7;
+      PERFORM_BITWISE_BINOP(^, *arg1, r[arg2].u);
+      break;
+    }
+    case 0x33: {  // xor r32, r/m32
+      uint8_t modrm = next();
+      const uint32_t* arg2 = CAST(const uint32_t*, effective_address(modrm));
+      uint8_t arg1 = (modrm>>3)&0x7;
+      PERFORM_BITWISE_BINOP(^, r[arg1].u, *arg2);
+      break;
+    }
+    case 0x35: {  // xor EAX, imm32
+      uint32_t* arg1 = &r[EAX].u;
+      uint32_t arg2 = CAST(uint32_t, imm32());
+      PERFORM_BITWISE_BINOP(^, *arg1, arg2);
+      break;
+    }
     case 0x81: {  // combine r/m32 with imm32
       uint8_t modrm = next();
       int32_t* arg1 = effective_address(modrm);
@@ -261,6 +281,12 @@ void run_one_instruction() {
         case 5:
           PERFORM_ARITHMETIC_BINOP(-, *arg1, arg2);
           break;
+        case 6: {
+          uint32_t* uarg1 = CAST(uint32_t*, arg1);
+          uint32_t uarg2 = CAST(uint32_t, arg2);
+          PERFORM_BITWISE_BINOP(^, *uarg1, uarg2);
+          break;
+        }
       }
       break;
     }
@@ -547,7 +573,7 @@ void test_or_imm32_with_rm32(void) {
   r[EBX].u = 0x0a0b0c03;
   load_program(
     // opcode     modrm     sib       displacement      immediate
-    "81           cb                                    82 00 00 00 "  // or EBX, 0x02
+    "81           cb                                    82 00 00 00 "  // or EBX, 0x82
   );
   run();
   CHECK(r[EBX].u == 0x0a0b0c83);
@@ -595,4 +621,94 @@ void test_or_rm32_with_r32(void) {
   );
   run();
   CHECK(r[EBX].u == 0x9090181b);  // LSB 0x0b | 0x10
+}
+
+//// xor
+
+// xor immediate with EAX
+void test_xor_imm32_with_eax(void) {
+  r[EAX].u = 0x0d0c4080;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "35                                                 0a 0b 0c 0d "  // xor EAX, 0x0d0c0b0a
+  );
+  run();
+  CHECK(r[EAX].u == 0x00004b8a);
+}
+
+// xor immediate with mod = 11 (register direct mode)
+void test_xor_imm32_with_rm32(void) {
+  r[EBX].u = 0x0a0b0c03;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "81           f3                                    07 00 00 00 "  // xor EBX, 0x07
+  );
+  run();
+  CHECK(r[EBX].u == 0x0a0b0c04);
+}
+
+// xor immediate with mod = 00 (register indirect mode)
+void test_xor_imm32_with_mem_at_rm32(void) {
+  // EBX starts out as 0
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "81           33                                    f0 00 00 00 "  // xor (EBX), 0xf0
+  );
+  run();
+  // Immediate operands at addresses 2-5 are subtracted from memory locations
+  // 0-3. Self-modifying code! Just to make the test simple, though. I don't
+  // endorse this.
+  CHECK(mem[0] == 0x71);  // 81 ^ f0
+  CHECK(mem[1] == 0x33);  // unchanged
+  CHECK(mem[2] == 0xf0);  // unchanged
+  CHECK(mem[3] == 0x00);  // unchanged
+  CHECK(mem[4] == 0x00);  // unchanged
+  CHECK(mem[5] == 0x00);  // unchanged
+}
+
+void test_xor_r32_with_rm32(void) {
+  r[EBX].u = 0x00000018;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "31           18 "  // xor (EAX), EBX
+    "90 90 "  // padding
+  );
+  run();
+  CHECK(mem[0] == 0x29);  // 0x31 ^ 0x18
+  CHECK(mem[1] == 0x18);  // unchanged
+  CHECK(mem[2] == 0x90);  // unchanged
+  CHECK(mem[3] == 0x90);  // unchanged
+}
+
+void test_xor_rm32_with_r32(void) {
+  r[EBX].u = 0x000000f9;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "33           18 "  // xor EBX, (EAX)
+    "90 90 "  // padding
+  );
+  run();
+  CHECK(r[EBX].u == 0x909018ca);  // LSB 0xf9 ^ 0x33
+}
+
+void test_xor_reflexive(void) {
+  r[EAX].u = 0x000000f9;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "31           c0 "  // xor EAX, EAX
+    "90 90 "  // padding
+  );
+  run();
+  CHECK(r[EAX].u == 0);
+}
+
+void test_xor_reflexive_2(void) {
+  r[EAX].u = 0x000000f9;
+  load_program(
+    // opcode     modrm     sib       displacement      immediate
+    "33           c0 "  // xor EAX, EAX (alternative)
+    "90 90 "  // padding
+  );
+  run();
+  CHECK(r[EAX].u == 0);
 }

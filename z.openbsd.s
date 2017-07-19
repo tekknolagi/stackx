@@ -33,6 +33,8 @@ _start:
   or [%ebx], dword ptr 0x0a0b0c0d
   or %ebx, [%eax]
   or [%eax], %ebx
+  xor %ebx, dword ptr 0x0a0b0c0d
+  xor [%ebx], dword ptr 0x0a0b0c0d
   #
   # exit
   xor %eax, %eax
