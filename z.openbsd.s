@@ -29,6 +29,10 @@ _start:
   add %eax, [%ebp+%edx*4-4]
   and %ebx, dword ptr 0x0a0b0c0d
   and [%ebx], dword ptr 0x0a0b0c0d
+  or %ebx, dword ptr 0x0a0b0c0d
+  or [%ebx], dword ptr 0x0a0b0c0d
+  or %ebx, [%eax]
+  or [%eax], %ebx
   #
   # exit
   xor %eax, %eax
