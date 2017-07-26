@@ -1,2 +1,0 @@
-http://compilers.cs.uni-saarland.de/projects/ssara/
-https://www.seas.upenn.edu/~cis341/current/hw/hw6/
