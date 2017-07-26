@@ -1,10 +1,6 @@
 module AST = struct
-  type reg = int
-  type arg = [ `Reg of reg | `Immed of int ]
-  type space = [ `Arg of arg | `Deref of arg ]
-  type op1 = space
-  type op2 = space * space
-  type op3 = space * space * space
+  open VM
+
   type t = [
     | `Halt
     | `Move of op2
@@ -21,6 +17,9 @@ module AST = struct
     | `Brnz of op1
     | `In of op1
     | `Out of op1
+
+    | `Malloc of op2
+    | `Free of op1
   ]
 
   let lower ast = ast
