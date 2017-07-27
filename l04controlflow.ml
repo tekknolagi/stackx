@@ -7,6 +7,7 @@ module AST = struct
 
     | `If of (space * t list * t list)
     | `Ifz of (t list * t list)
+    | `While of (space * t list)
   ]
 
   let labelcount = ref 0
@@ -30,6 +31,12 @@ module AST = struct
           @ [ifzlbl]
           @ lower ifz
           @ [endlbl]
+      | `While (cond, body) ->
+          let bodylbl = nextlabel () in
+          let endlbl = nextlabel () in
+          lower [bodylbl;
+                 `If (cond, body @ [`Goto bodylbl], [`Goto endlbl]);
+                 endlbl]
       | #PREV.t as x -> [x]
     in
     List.concat @@ List.map lower_one ast
