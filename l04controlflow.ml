@@ -25,13 +25,11 @@ module AST = struct
       | `Ifz (ifz, ifnz) ->
           let ifzlbl = nextlabel () in
           let endlbl = nextlabel () in
-          PREV.lower (
-            [`GotoZ ifzlbl]
-            @ lower ifnz
-            @ [ifzlbl]
-            @ lower ifz
-            @ [endlbl]
-          )
+          [`GotoZ ifzlbl]
+          @ lower ifnz
+          @ [ifzlbl]
+          @ lower ifz
+          @ [endlbl]
       | #PREV.t as x -> [x]
     in
     List.concat @@ List.map lower_one ast
