@@ -1,6 +1,5 @@
-module PREV = L01substitutions.AST
-
 module AST = struct
+  module PREV = L01substitutions.AST
   open VM
 
   type t = [
@@ -14,9 +13,9 @@ module AST = struct
     | `Ret
   ]
 
-  let rec lower ast =
+  let rec lower (ast : t list) =
     let lower_one = function
-      | `And (dst, a, b) -> [
+      | `And (dst, a, b) -> lower [
         `Nand (dst, a, b);
         `Not (dst, dst)
       ]
@@ -25,11 +24,11 @@ module AST = struct
         `Nand (dst, b, b);
         `Nand (dst, tmp, dst)
       ]
-      | `Push a -> [
+      | `Push a -> lower [
         `Move (`Deref VM.sp, a);
         `Dec VM.sp
       ]
-      | `Pop a -> [
+      | `Pop a -> lower [
         `Inc VM.sp;
         `Move (a, `Deref VM.sp)
       ]
@@ -40,7 +39,7 @@ module AST = struct
       | `Ret -> lower [
         `Pop VM.ip
       ]
-      | x -> PREV.lower [x]
+      | #PREV.t as x -> PREV.lower [x]
     in
     List.concat @@ List.map lower_one ast
 end

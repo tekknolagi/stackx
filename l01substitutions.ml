@@ -1,6 +1,5 @@
-module PREV = L00rabbit.AST
-
 module AST = struct
+  module PREV = L00rabbit.AST
   open VM
 
   type t = [
@@ -12,13 +11,13 @@ module AST = struct
     | `Not of op2
   ]
 
-  let lower ast =
+  let lower (ast : t list) =
     let lower_one = function
       | `Inc a -> [`Add (a, a, `Imm 1)]
       | `Dec a -> [`Sub (a, a, `Imm 1)]
       | `Cmp (a, b) -> [`Sub (VM.tmp, a, b)]
       | `Not (dst, a) -> [`Nand (dst, a, a)]
-      | x -> PREV.lower [x]
+      | #PREV.t as x -> PREV.lower [x]
     in
     List.concat @@ List.map lower_one ast
 end
