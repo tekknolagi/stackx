@@ -3,7 +3,6 @@ module AST = struct
 
   type t = [
     | `Halt
-    | `Move of op2
     | `Add of op3
     | `Sub of op3
     | `Mul of op3

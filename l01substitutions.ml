@@ -9,6 +9,7 @@ module AST = struct
     | `Dec of op1
     | `Cmp of op2
     | `Not of op2
+    | `Move of op2
   ]
 
   let lower (ast : t list) =
@@ -17,6 +18,7 @@ module AST = struct
       | `Dec a -> [`Sub (a, a, `Imm 1)]
       | `Cmp (a, b) -> [`Sub (VM.tmp, a, b)]
       | `Not (dst, a) -> [`Nand (dst, a, a)]
+      | `Move (dst, src) -> [`Add (dst, `Imm 0, src)]
       | #PREV.t as x -> PREV.lower [x]
     in
     List.concat @@ List.map lower_one ast

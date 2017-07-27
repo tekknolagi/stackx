@@ -19,7 +19,7 @@ module AST = struct
     | `GotoNz of [ op1 | `Label of string ]
   ]
 
-  let lower ast (ast : t list) =
+  let lower (ast : t list) =
     let find_labels instrs =
       let rec fl offset = function
         | [] -> []
