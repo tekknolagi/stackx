@@ -19,7 +19,6 @@ module AST = struct
     | `GotoNz of [ op1 | `Label of string ]
   ]
 
-  let symtab = ref []
   let lower (ast : t list) =
     let find_labels instrs =
       let rec fl offset = function
@@ -34,9 +33,9 @@ module AST = struct
       | (#without_labels as x)::rst -> x::(without_labels rst)
       | _::rst -> without_labels rst
     in
-    let lower_one instr =
+    let lower_one symtab instr =
       let translate_arg = function
-        | `Label l -> `Imm (List.assoc l !symtab)
+        | `Label l -> `Imm (List.assoc l symtab)
         | #space as x -> x
       in
       match instr with
@@ -45,6 +44,6 @@ module AST = struct
       | `GotoNz x -> [`Brnz (translate_arg x)]
       | #PREV.t as x -> [x]
     in
-    symtab := !symtab @ find_labels ast;
-    List.concat @@ List.map lower_one (without_labels ast)
+    let symtab = find_labels ast in
+    List.concat @@ List.map (lower_one symtab) (without_labels ast)
 end
