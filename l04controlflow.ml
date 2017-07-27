@@ -22,7 +22,7 @@ module AST = struct
     in
     let lower_one = function
       | `If (cond, iftrue, iffalse) ->
-          [`Test cond] @ lower [`Ifz (iftrue, iffalse)]
+          lower [`Test cond; `Ifz (iftrue, iffalse)]
       | `Ifz (ifz, ifnz) ->
           let ifzlbl = nextlabel () in
           let endlbl = nextlabel () in
