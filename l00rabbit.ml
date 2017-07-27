@@ -16,6 +16,7 @@ module AST = struct
     | `Brnz of op1
     | `In of op1
     | `Out of op1
+    | `Test of op1
     | `Malloc of op2
     | `Free of op1
   ]

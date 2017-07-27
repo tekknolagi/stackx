@@ -5,6 +5,7 @@ module AST = struct
   type t = [
     PREV.t
 
+    | `If of (space * t list * t list)
     | `Ifz of (t list * t list)
   ]
 
@@ -19,6 +20,8 @@ module AST = struct
       `Label ("__if_lbl__" ^ string_of_int c)
     in
     let lower_one = function
+      | `If (cond, iftrue, iffalse) ->
+          [`Test cond] @ lower [`Ifz (iftrue, iffalse)]
       | `Ifz (ifz, ifnz) ->
           let ifzlbl = nextlabel () in
           let endlbl = nextlabel () in
