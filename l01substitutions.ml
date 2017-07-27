@@ -19,7 +19,7 @@ module AST = struct
       | `Cmp (a, b) -> [`Sub (VM.tmp, a, b)]
       | `Not (dst, a) -> [`Nand (dst, a, a)]
       | `Move (dst, src) -> [`Add (dst, `Imm 0, src)]
-      | #PREV.t as x -> PREV.lower [x]
+      | #PREV.t as x -> [x]
     in
     List.concat @@ List.map lower_one ast
 end

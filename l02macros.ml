@@ -39,7 +39,7 @@ module AST = struct
       | `Ret -> lower [
         `Pop VM.ip
       ]
-      | #PREV.t as x -> PREV.lower [x]
+      | #PREV.t as x -> [x]
     in
     List.concat @@ List.map lower_one ast
 end
