@@ -6,8 +6,9 @@ let tmp   = `Reg 0xD
 let flags = `Reg 0xE
 
 type reg = int
+type offset = int
 type arg = [ `Reg of reg | `Imm of int ]
-type space = [ arg | `Deref of arg ]
+type space = [ arg | `Deref of (offset * arg) ]
 type op1 = space
 type op2 = space * space
 type op3 = space * space * space
@@ -21,7 +22,9 @@ let rec show_op1 : space -> string = function
   | `Reg 0xE -> "flags"
   | `Reg r -> "r" ^ string_of_int r
   | `Imm i -> "$" ^ string_of_int i
-  | `Deref arg -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
+  | `Deref (0, arg) -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
+  | `Deref (off, arg) ->
+      string_of_int off ^ "(" ^ show_op1 (Obj.magic arg) ^ ")"
 
 let show_op2 (a, b) = show_op1 a ^ ", " ^ show_op1 b
 let show_op3 (a, b, c) = show_op2 (a, b) ^ ", " ^ show_op1 c
