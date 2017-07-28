@@ -13,6 +13,12 @@ type op2 = space * space
 type op3 = space * space * space
 
 let rec show_op1 : space -> string = function
+  | `Reg 0x0 -> "zero"
+  | `Reg 0xA -> "ip"
+  | `Reg 0xB -> "sp"
+  | `Reg 0xC -> "ret"
+  | `Reg 0xD -> "tmp"
+  | `Reg 0xE -> "flags"
   | `Reg r -> "r" ^ string_of_int r
   | `Imm i -> "$" ^ string_of_int i
   | `Deref arg -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
