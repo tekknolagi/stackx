@@ -12,6 +12,14 @@ type op1 = space
 type op2 = space * space
 type op3 = space * space * space
 
+let rec show_op1 : space -> string = function
+  | `Reg r -> "r" ^ string_of_int r
+  | `Imm i -> "$" ^ string_of_int i
+  | `Deref arg -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
+
+let show_op2 (a, b) = show_op1 a ^ ", " ^ show_op1 b
+let show_op3 (a, b, c) = show_op2 (a, b) ^ ", " ^ show_op1 c
+
 module Counter = struct
   type t = { mutable counter : int; base : string }
   let make s = { counter = 0; base = s }
