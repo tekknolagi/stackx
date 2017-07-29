@@ -6,11 +6,15 @@ module AST = struct
   type t = [
     PREV.t
 
+    | `AsmFun of (name * t list)
     | `Funcall of (name * space list)
   ]
 
-  let lower (ast : t list) =
+  let rec lower (ast : t list) =
     let lower_one = function
+      | `AsmFun (lbl, body) ->
+            [`Label lbl]
+            @ lower body
       | `Funcall (lbl, args) ->
           (* Make a new stack frame *)
           [ `Push VM.bp;
