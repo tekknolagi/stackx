@@ -15,7 +15,7 @@ module AST = struct
 
   let rec lower (ast : t list) =
     let lower_one = function
-      | `And (dst, a, b) -> lower [
+      | `And (dst, a, b) -> [
         `Nand (dst, a, b);
         `Not (dst, dst)
       ]
@@ -24,11 +24,11 @@ module AST = struct
         `Nand (dst, b, b);
         `Nand (dst, tmp, dst)
       ]
-      | `Push a -> lower [
+      | `Push a -> [
         `Move (`Deref (`Offset (0, VM.sp)), a);
         `Dec VM.sp
       ]
-      | `Pop a -> lower [
+      | `Pop a -> [
         `Inc VM.sp;
         `Move (a, `Deref (`Offset (0, VM.sp)))
       ]
