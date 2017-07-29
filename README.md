@@ -10,5 +10,5 @@ ocamlbuild ./main.native
 ./main.native
 ```
 
-Expected output is nothing with exit code zero. The real errors (if any) would
-have been at typecheck-time.
+Expected output is somewhat real-looking assembly that represents the lowered
+program in `main.ml`.
