@@ -4,11 +4,13 @@ let sp    = `Reg 0xB
 let ret   = `Reg 0xC
 let tmp   = `Reg 0xD
 let flags = `Reg 0xE
+let bp    = `Reg 0xF
 
 type reg = int
 type offset = int
 type arg = [ `Reg of reg | `Imm of int ]
-type space = [ arg | `Deref of (offset * arg) ]
+type adjusted = [ arg | `Offset of (offset * arg) ]
+type space = [ adjusted | `Deref of adjusted ]
 type op1 = space
 type op2 = space * space
 type op3 = space * space * space
@@ -20,11 +22,14 @@ let rec show_op1 : space -> string = function
   | `Reg 0xC -> "ret"
   | `Reg 0xD -> "tmp"
   | `Reg 0xE -> "flags"
+  | `Reg 0xF -> "bp"
   | `Reg r -> "r" ^ string_of_int r
   | `Imm i -> "$" ^ string_of_int i
-  | `Deref (0, arg) -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
-  | `Deref (off, arg) ->
-      string_of_int off ^ "(" ^ show_op1 (Obj.magic arg) ^ ")"
+  | `Offset (0, arg) -> show_op1 (Obj.magic arg)
+  | `Offset (off, arg) ->
+      let sgn = if off > 0 then "+" else "" in
+      "[" ^ show_op1 (Obj.magic arg) ^ sgn ^ string_of_int off ^ "]"
+  | `Deref arg -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
 
 let show_op2 (a, b) = show_op1 a ^ ", " ^ show_op1 b
 let show_op3 (a, b, c) = show_op2 (a, b) ^ ", " ^ show_op1 c

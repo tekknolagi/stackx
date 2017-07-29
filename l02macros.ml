@@ -25,15 +25,15 @@ module AST = struct
         `Nand (dst, tmp, dst)
       ]
       | `Push a -> lower [
-        `Move (`Deref (0, VM.sp), a);
+        `Move (`Deref (`Offset (0, VM.sp)), a);
         `Dec VM.sp
       ]
       | `Pop a -> lower [
         `Inc VM.sp;
-        `Move (a, `Deref (0, VM.sp))
+        `Move (a, `Deref (`Offset (0, VM.sp)))
       ]
       | `Call addr -> lower [
-        `Push VM.ip;
+        `Push (`Offset (1, VM.ip));
         `Br addr
       ]
       | `Ret -> lower [

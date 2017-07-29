@@ -1,17 +1,14 @@
 let prog : L00rabbit.AST.t list =
   [
-    `Label "start";
-    `In (`Reg 1);
-    `In (`Reg 2);
-    `Cmp ((`Reg 1), (`Reg 2));
-    `Ifz (
-      [`Out (`Imm 97)],
-      [`Out (`Imm 98)]
-    );
-    `Inc (`Reg 2);
-    `Out (`Reg 1)
-  ] |> L05expressions.AST.lower
-    (* |> L05variables.AST.lower *)
+    `Label "addtwo";
+    `Add (VM.ret, `Deref (`Offset (1, VM.sp)), `Deref (`Offset (0, VM.sp)));
+    `Pop VM.bp;
+    `Ret;
+
+    `Label "_start";
+    `Funcall ("addtwo", [`Imm 3; `Imm 4]);
+    `Halt;
+  ] |> L05funcall.AST.lower
     |> L04controlflow.AST.lower
     |> L03labels.AST.lower
     |> L02macros.AST.lower

@@ -9,6 +9,7 @@ module AST = struct
     | `Goto of [ op1 | `Label of string ]
     | `GotoZ of [ op1 | `Label of string ]
     | `GotoNz of [ op1 | `Label of string ]
+    | `CallLabel of [ op1 | `Label of string ]
   ]
 
   type without_labels = [
@@ -17,6 +18,7 @@ module AST = struct
     | `Goto of [ op1 | `Label of string ]
     | `GotoZ of [ op1 | `Label of string ]
     | `GotoNz of [ op1 | `Label of string ]
+    | `CallLabel of [ op1 | `Label of string ]
   ]
 
   let lower (ast : t list) =
@@ -42,6 +44,7 @@ module AST = struct
       | `Goto x -> [`Br (translate_arg x)]
       | `GotoZ x -> [`Brz (translate_arg x)]
       | `GotoNz x -> [`Brnz (translate_arg x)]
+      | `CallLabel x -> [`Call (translate_arg x)]
       | #PREV.t as x -> [x]
     in
     let symtab = find_labels ast in
