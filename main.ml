@@ -1,7 +1,7 @@
 let prog : L00rabbit.AST.t list =
   [
     `Label "addtwo";
-    `Add (VM.ret, `Deref (`Offset (1, VM.sp)), `Deref (`Offset (0, VM.sp)));
+    `Add (VM.ret, `Deref (`Offset (1, VM.sp)), `Deref (`Offset (2, VM.sp)));
     `Pop VM.bp;
     `Ret;
 
