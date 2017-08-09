@@ -7,7 +7,7 @@ module AST = struct
     PREV.t
 
     | `AsmFun of (name * t list)
-    | `Funcall of (name * space list)
+    | `AsmFuncall of (name * space list)
   ]
 
   let rec lower (ast : t list) =
@@ -15,7 +15,7 @@ module AST = struct
       | `AsmFun (lbl, body) ->
             [`Label lbl]
             @ lower body
-      | `Funcall (lbl, args) ->
+      | `AsmFuncall (lbl, args) ->
           (* Make a new stack frame *)
           [ `Push VM.bp;
             `Move (VM.bp, VM.sp);

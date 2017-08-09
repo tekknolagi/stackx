@@ -6,7 +6,7 @@ let prog : L00machine.AST.t list =
     ]);
 
     `Label "_start";
-    `Funcall ("addtwo", [`Imm 3; `Imm 4]);
+    `AsmFuncall ("addtwo", [`Imm 3; `Imm 4]);
     `Halt;
   ] |> L02funcall.AST.lower
     |> L01controlflow.AST.lower
