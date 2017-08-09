@@ -1,5 +1,5 @@
 module AST = struct
-  module PREV = L03labels.AST
+  module PREV = L00machine.AST
   open VM
 
   type t = [
@@ -19,7 +19,7 @@ module AST = struct
       | `Ifz (ifz, ifnz) ->
           let ifzlbl = nextlabel () in
           let endlbl = nextlabel () in
-          [`GotoZ ifzlbl]
+          [`Jz ifzlbl]
           @ lower ifnz
           @ [ifzlbl]
           @ lower ifz
@@ -28,7 +28,7 @@ module AST = struct
           let bodylbl = nextlabel () in
           let endlbl = nextlabel () in
           lower [bodylbl;
-                 `If (cond, body @ [`Goto bodylbl], [`Goto endlbl]);
+                 `If (cond, body @ [`J bodylbl], [`J endlbl]);
                  endlbl]
       | #PREV.t as x -> [x]
     in

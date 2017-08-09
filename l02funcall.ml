@@ -1,5 +1,5 @@
 module AST = struct
-  module PREV = L04controlflow.AST
+  module PREV = L01controlflow.AST
   open VM
 
   type name = string
@@ -22,7 +22,7 @@ module AST = struct
           ]
           (* Push arguments in reverse order *)
           @ List.map (fun space -> `Push space) (List.rev args)
-          @ [ `CallLabel (`Label lbl);
+          @ [ `Call (`Label lbl);
               (* Remove args from stack frame *)
               `Add (VM.sp, VM.sp, `Imm (List.length args));
             ]

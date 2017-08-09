@@ -1,29 +1,22 @@
-let zero  = `Reg 0x0
-let ip    = `Reg 0xA
-let sp    = `Reg 0xB
-let ret   = `Reg 0xC
-let tmp   = `Reg 0xD
-let flags = `Reg 0xE
-let bp    = `Reg 0xF
-
-type reg = int
+type reg = EAX | EBX | ECX | EDX | EDI | ESI | EBP | ESP | EIP
+let ret = `Reg EAX
+let sp = `Reg ESP
+let bp = `Reg EBP
 type offset = int
-type arg = [ `Reg of reg | `Imm of int ]
+type arg = [ `Reg of reg | `Imm of int | `Label of string ]
 type adjusted = [ arg | `Offset of (offset * arg) ]
 type space = [ adjusted | `Deref of adjusted ]
 type op1 = space
 type op2 = space * space
 type op3 = space * space * space
 
+let show_reg = function
+  | EAX -> "eax" | EBX -> "ebx" | ECX -> "ecx" | EDX -> "edx"
+  | EDI -> "edi" | ESI -> "esi" | EBP -> "ebp" | ESP -> "esp" | EIP -> "eip"
+
 let rec show_op1 : space -> string = function
-  | `Reg 0x0 -> "zero"
-  | `Reg 0xA -> "ip"
-  | `Reg 0xB -> "sp"
-  | `Reg 0xC -> "ret"
-  | `Reg 0xD -> "tmp"
-  | `Reg 0xE -> "flags"
-  | `Reg 0xF -> "bp"
-  | `Reg r -> "r" ^ string_of_int r
+  | `Label s -> s
+  | `Reg r -> show_reg r
   | `Imm i -> "$" ^ string_of_int i
   | `Offset (0, arg) -> show_op1 (Obj.magic arg)
   | `Offset (off, arg) ->
