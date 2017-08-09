@@ -21,7 +21,7 @@ let rec show_op1 : space -> string = function
   | `Offset (0, arg) -> show_op1 (Obj.magic arg)
   | `Offset (off, arg) ->
       let sgn = if off > 0 then "+" else "" in
-      "[" ^ show_op1 (Obj.magic arg) ^ sgn ^ string_of_int off ^ "]"
+      "[" ^ show_op1 (Obj.magic arg) ^ sgn ^ string_of_int (off*4) ^ "]"
   | `Deref arg -> "(" ^ show_op1 (Obj.magic arg) ^ ")"
 
 let show_op2 (a, b) = show_op1 a ^ ", " ^ show_op1 b
