@@ -1,5 +1,6 @@
 type reg = EAX | EBX | ECX | EDX | EDI | ESI | EBP | ESP | EIP
 let ret = `Reg EAX
+let eax = ret
 let sp = `Reg ESP
 let bp = `Reg EBP
 type offset = int

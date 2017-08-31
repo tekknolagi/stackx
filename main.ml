@@ -1,14 +1,15 @@
 let prog : L00machine.AST.t list =
   [
     `AsmFun ("addtwo", [
-      `Add (VM.ret, `Deref (`Offset (1, VM.sp)), `Deref (`Offset (2, VM.sp)));
+      `Add (VM.eax, `Deref (`Offset (1, VM.sp)), `Deref (`Offset (2, VM.sp)));
       `Ret;
     ]);
 
     `Label "_start";
     `AsmFuncall ("addtwo", [`Imm 3; `Imm 4]);
     `Halt;
-  ] |> L02funcall.AST.lower
+  ] |> L03fundef.AST.lower
+    |> L02funcall.AST.lower
     |> L01controlflow.AST.lower
 ;;
 
